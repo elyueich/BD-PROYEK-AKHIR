@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Web Side Menu</title>
+    <title>Halaman Web dengan Tab Visualisasi dan Kontrol Lengkap</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha2d3996/gLd9Oq/m0tN9d61j632w5f5o0j2G8/9e1/e0p9d74f/j07d93d399639d61j6" crossorigin="" />
@@ -140,6 +140,7 @@
             background-color: #F2F2F2;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             width: 300px;
+            /* Default width */
             display: none;
             position: fixed;
             top: 40px;
@@ -147,6 +148,10 @@
             height: calc(100vh - 40px);
             z-index: 99;
             flex-direction: column;
+            resize: horizontal;
+            overflow: hidden;
+            min-width: 200px;
+            max-width: 500px;
         }
 
         .menu-div.show {
@@ -289,45 +294,98 @@
             background-color: #45a049;
         }
 
-        .visualisasi-item {
-            position: relative;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            padding: 15px;
-            overflow: hidden;
-        }
-
-        .visualisasi-item h4 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .visualisasi-close-btn {
+        /* Styles for the new visualization tab */
+        #visualisasi-tab-container {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 95vw;
+            max-height: 95vh;
+            z-index: 102;
+            background-color: #f0f2f5;
+            display: none;
+            flex-direction: column;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 600px;
+            resize: both;
+            overflow: auto;
+            min-width: 300px;
+            min-height: 200px;
+            padding-bottom: 20px;
+        }
+
+        #visualisasi-tab-container.is-dragging {
+            cursor: grabbing;
+        }
+
+        .visualisasi-tab-header {
+            background-color: #ffffff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-height: 40px;
+            cursor: move;
+        }
+
+        .visualisasi-tab-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .visualisasi-tab-close-btn {
             background: none;
             border: none;
-            font-size: 20px;
+            font-size: 24px;
             cursor: pointer;
-            color: #999;
+            color: #555;
             transition: color 0.2s;
         }
 
-        .visualisasi-close-btn:hover {
-            color: #555;
+        .visualisasi-tab-close-btn:hover {
+            color: #000;
+        }
+
+        .visualisasi-tab-content-wrapper {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .visualisasi-tab-content-inner {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .image-wrapper {
             position: relative;
             overflow: hidden;
             width: 100%;
-            height: auto;
+            /* Fit to container */
+            height: 100%;
+            /* Fit to container */
             cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .image-wrapper.is-dragging {
@@ -337,14 +395,20 @@
         .image-comparison {
             position: relative;
             width: 100%;
-            height: auto;
+            height: 100%;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .image-comparison img {
             display: block;
-            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
+            object-fit: contain;
         }
 
         .image-comparison-wave {
@@ -353,7 +417,6 @@
             left: 0;
             height: 100%;
             width: 50%;
-            /* Default 50% */
         }
 
         .image-comparison-slider {
@@ -381,9 +444,13 @@
         }
 
         .visualisasi-image {
-            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
-            transform-origin: 0 0;
+            object-fit: contain;
+            transform-origin: center center;
+            transition: transform 0.2s ease-out;
         }
 
         .image-controls {
@@ -391,8 +458,12 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 20px;
             flex-wrap: wrap;
+        }
+
+        .image-controls.zoom-only {
+            justify-content: center;
         }
 
         .image-control-btn {
@@ -410,17 +481,58 @@
             transition: background-color 0.2s, transform 0.2s;
         }
 
-        .image-control-btn:hover {
+        .image-control-btn.arrow {
+            background-color: transparent;
+            border: none;
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .image-control-btn.arrow.prev-btn {
+            left: 0;
+        }
+
+        .image-control-btn.arrow.next-btn {
+            right: 0;
+        }
+
+        .image-control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .image-control-btn:hover:enabled {
             background-color: #f0f0f0;
             transform: scale(1.05);
         }
 
-        .image-control-btn:active {
+        .image-control-btn.arrow:hover:enabled {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .image-control-btn:active:enabled {
             transform: scale(0.95);
         }
 
+        .image-control-btn.arrow:active:enabled {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+
         .image-control-btn i {
             color: #555;
+        }
+
+        .image-control-btn.arrow i {
+            font-size: 40px;
+            color: #3b82f6;
+        }
+
+        .image-control-btn.arrow:hover i {
+            color: #2563eb;
         }
 
         .leaflet-marker-icon.geolocation-marker {
@@ -434,18 +546,74 @@
             margin-bottom: 5px;
         }
 
+        .legend-section {
+            margin-bottom: 15px;
+        }
+
+        .legend-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            margin-top: 15px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+        
+        /* Styles for the legend dropdown */
+        .legend-details {
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-summary {
+            font-weight: bold;
+            padding: 12px 15px;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .legend-summary::-webkit-details-marker,
+        .legend-summary::marker {
+            display: none;
+        }
+
+        .legend-summary i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .legend-details[open] .legend-summary i {
+            transform: rotate(180deg);
+        }
+        
+        .legend-dropdown-content {
+            padding: 10px 15px 5px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .legend-subsection-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
         .legend-color-box {
             width: 20px;
             height: 10px;
             border: 1px solid #ccc;
             margin-right: 10px;
-        }
-
-        .legend-group-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
         }
 
         /* Style for the table list and icons */
@@ -696,7 +864,7 @@
         </div>
         <div class="menu-content">
             <p id="filter-initial-text" style="text-align: center; color: #777;">Pilih layer di menu 'Layer' untuk menampilkan opsi filter.</p>
-            
+
             <div id="kecamatan-filter-group" class="filter-group">
                 <h4>Filter Berdasarkan Kecamatan</h4>
                 <div class="select-group">
@@ -705,7 +873,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <div id="desa-filter-group" class="filter-group">
                 <h4>Filter Berdasarkan Desa</h4>
                 <div class="select-group">
@@ -714,7 +882,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <hr style="margin: 15px 0;">
             <button id="reset-filter-btn" style="width: 100%; padding: 10px; background-color: #ef4444; color: white; border: none; cursor: pointer; display: none;">Reset Filter</button>
             <hr style="margin: 15px 0;">
@@ -727,12 +895,7 @@
             <button class="close-button" data-target-close="informasi-menu">&times;</button>
         </div>
         <div class="menu-content">
-            <p id="informasi-text">Klik pada garis di peta dan kemudian tombol di pop-up untuk menampilkan visualisasi
-                di sini.</p>
-
-            <!-- Container for multiple visualizations -->
-            <div id="visualisasi-container">
-            </div>
+            <p>Klik ikon tabel pada menu "Layer" untuk menampilkan data di sini.</p>
         </div>
     </div>
 
@@ -745,6 +908,24 @@
         <div class="menu-content" id="table-content">
             <p style="text-align: center; color: #777;">Klik ikon tabel pada menu "Layer" untuk menampilkan data di
                 sini.</p>
+        </div>
+    </div>
+
+    <!-- New Visualization Tab -->
+    <div id="visualisasi-tab-container">
+        <div class="visualisasi-tab-header" id="visualisasi-tab-header">
+            <h3 id="visualisasi-tab-title">Visualisasi Data</h3>
+            <button class="visualisasi-tab-close-btn">&times;</button>
+        </div>
+        <div class="visualisasi-tab-content-wrapper" id="visualisasi-tab-content-wrapper">
+            <!-- Navigation arrows -->
+            <button id="prev-btn" class="image-control-btn arrow prev-btn" style="display: none;"><i
+                    class="fas fa-chevron-left"></i></button>
+            <div class="visualisasi-tab-content" id="visualisasi-tab-content">
+                <!-- Content will be injected here by JavaScript -->
+            </div>
+            <button id="next-btn" class="image-control-btn arrow next-btn" style="display: none;"><i
+                    class="fas fa-chevron-right"></i></button>
         </div>
     </div>
 
@@ -768,8 +949,6 @@
             const menuItems = document.querySelectorAll('.sidemenu-item');
             const menuDivs = document.querySelectorAll('.menu-div');
             const closeButtons = document.querySelectorAll('.close-button');
-            const informasiText = document.getElementById('informasi-text');
-            const visualisasiContainer = document.getElementById('visualisasi-container');
             const geolocationBtn = document.getElementById('geolocation-btn');
             const fullscreenBtn = document.getElementById('fullscreen-btn');
             const transparencySlider = document.getElementById('transparency-slider');
@@ -784,6 +963,16 @@
             const desaFilter = document.getElementById('desa-filter');
             const layerCheckboxes = document.querySelectorAll('input[name="overlay"]');
             const resetButton = document.getElementById('reset-filter-btn');
+
+            // New elements for the visualization tab
+            const visualisasiTabContainer = document.getElementById('visualisasi-tab-container');
+            const visualisasiTabHeader = document.getElementById('visualisasi-tab-header');
+            const visualisasiTabTitle = document.getElementById('visualisasi-tab-title');
+            const visualisasiTabContent = document.getElementById('visualisasi-tab-content');
+            const visualisasiTabCloseBtn = document.querySelector('.visualisasi-tab-close-btn');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
 
             // Initialize Leaflet map
             var map = L.map('map').setView([-8.65, 115.15], 11);
@@ -811,6 +1000,10 @@
             let geojsonData = {};
             let activeGarisPantaiLayers = [];
 
+            // Array to hold visualisasi data
+            let visualisasiItems = [];
+            let currentVisualisasiIndex = 0;
+
             // Adjust map size when layout changes
             const resizeObserver = new ResizeObserver(() => {
                 map.invalidateSize();
@@ -824,6 +1017,7 @@
                 if (isSideMenuVisible) {
                     sideMenu.classList.remove('show-sidemenu');
                     mainContent.classList.remove('pushed-by-sidemenu');
+                    // visualisasiTabContainer.classList.remove('pushed-by-sidemenu');
                     menuToggleIcon.classList.remove('fa-arrow-left');
                     menuToggleIcon.classList.add('fa-bars');
 
@@ -834,6 +1028,7 @@
                 } else {
                     sideMenu.classList.add('show-sidemenu');
                     mainContent.classList.add('pushed-by-sidemenu');
+                    // visualisasiTabContainer.classList.add('pushed-by-sidemenu');
                     menuToggleIcon.classList.remove('fa-bars');
                     menuToggleIcon.classList.add('fa-arrow-left');
                 }
@@ -872,6 +1067,13 @@
                 });
             });
 
+            // Add event listener for the new visualization tab close button
+            visualisasiTabCloseBtn.addEventListener('click', () => {
+                visualisasiTabContainer.style.display = 'none';
+                visualisasiItems = []; // Bersihkan array visualisasi saat tab ditutup
+                currentVisualisasiIndex = 0;
+            });
+
             // Add event listener for basemap controls
             const basemapControls = document.getElementById('basemap-controls');
             basemapControls.addEventListener('change', (e) => {
@@ -898,114 +1100,129 @@
                 legendaContainer.innerHTML = ''; // Bersihkan legenda yang ada
 
                 let hasLegend = false;
+                const kerentananLegends = [];
+                const garisPantaiLegends = [];
 
                 if (slrlnLayer && map.hasLayer(slrlnLayer)) {
-                    const slrLegend = document.createElement('div');
-                    slrLegend.className = 'legend-item';
-                    slrLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: #FFA500;"></div>
-                        <span>SLR Line</span>
-                    `;
-                    legendaContainer.appendChild(slrLegend);
-                    hasLegend = true;
+                    kerentananLegends.push({
+                        type: 'single',
+                        title: 'SLR Line',
+                        data: [{
+                            color: '#FFA500',
+                            text: 'Garis Pantai dengan Tingkat Kerentanan Kenaikan Permukaan Air Laut'
+                        }]
+                    });
                 }
 
                 if (waveLayer && map.hasLayer(waveLayer)) {
-                    const waveLegend = document.createElement('div');
-                    waveLegend.className = 'legend-item';
-                    waveLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: #008000;"></div>
-                        <span>WAVE Line</span>
-                    `;
-                    legendaContainer.appendChild(waveLegend);
-                    hasLegend = true;
+                    kerentananLegends.push({
+                        type: 'single',
+                        title: 'WAVE Line',
+                        data: [{
+                            color: '#008000',
+                            text: 'Garis Pantai dengan Tingkat Kerentanan Gelombang dan Arus'
+                        }]
+                    });
                 }
 
                 if (glglnLayer && map.hasLayer(glglnLayer)) {
-                    const legendData = [
+                    const glglnData = [
                         { color: '#008000', text: 'Sangat Rendah (Batuan Vulkanik & Plutonik)' },
                         { color: '#00ff00', text: 'Rendah (Batuan Gunung Api & Sedimen Terkonsolidasi)' },
                         { color: '#ffff00', text: 'Sedang (Sedimen Terkonsolidasi & Alluvium)' },
                         { color: '#ff9900', text: 'Tinggi (Sedimen Terkonsolidasi)' },
                         { color: '#ff0000', text: 'Sangat Tinggi (Sedimen Tak Terkonsolidasi)' }
                     ];
-
-                    // Tambahkan judul legenda di sini
-                    const legendTitle = document.createElement('h4'); // Atau p, h5, dll.
-                    legendTitle.className = 'legend-group-title';
-                    legendTitle.textContent = 'Geologi'; // Ganti dengan judul yang kamu inginkan
-                    legendaContainer.appendChild(legendTitle);
-
-                    legendData.forEach(item => {
-                        const glglnLegend = document.createElement('div');
-                        glglnLegend.className = 'legend-item';
-                        glglnLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: ${item.color};"></div>
-                        <span>${item.text}</span>
-                        `;
-                        legendaContainer.appendChild(glglnLegend);
-                    });
-
-                    hasLegend = true;
+                    kerentananLegends.push({ type: 'multiple', title: 'GLG Line (Geologi)', data: glglnData });
                 }
 
                 if (slplnLayer && map.hasLayer(slplnLayer)) {
-                    const legendData = [
+                    const slplnData = [
                         { color: '#008000', text: 'Sangat Rendah (> 12%)' },
                         { color: '#00ff00', text: 'Rendah (9-12%)' },
                         { color: '#ffff00', text: 'Sedang (6-9%)' },
                         { color: '#ff9900', text: 'Tinggi (3-6%)' },
                         { color: '#ff0000', text: 'Sangat Tinggi (< 3%)' }
                     ];
-
-                    // Tambahkan judul legenda di sini
-                    const legendTitle = document.createElement('h4'); // Atau p, h5, dll.
-                    legendTitle.className = 'legend-group-title';
-                    legendTitle.textContent = 'Slope';
-                    legendaContainer.appendChild(legendTitle);
-
-                    legendData.forEach(item => {
-                        const slplnLegend = document.createElement('div');
-                        slplnLegend.className = 'legend-item';
-                        slplnLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: ${item.color};"></div>
-                        <span>${item.text}</span>
-                        `;
-                        legendaContainer.appendChild(slplnLegend);
-                    });
-
-                    hasLegend = true;
+                    kerentananLegends.push({ type: 'multiple', title: 'SLP Line (Lereng Pantai)', data: slplnData });
                 }
-                
+
                 if (garisPantai2016Layer && map.hasLayer(garisPantai2016Layer)) {
-                    const garisPantaiLegend = document.createElement('div');
-                    garisPantaiLegend.className = 'legend-item';
-                    garisPantaiLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: blue;"></div>
-                        <span>Garis Pantai 2016</span>
-                    `;
-                    legendaContainer.appendChild(garisPantaiLegend);
-                    hasLegend = true;
+                    garisPantaiLegends.push({ color: 'blue', text: 'Garis Pantai 2016' });
                 }
-                
+
                 if (garisPantai2017Layer && map.hasLayer(garisPantai2017Layer)) {
-                    const garisPantaiLegend = document.createElement('div');
-                    garisPantaiLegend.className = 'legend-item';
-                    garisPantaiLegend.innerHTML = `
-                        <div class="legend-color-box" style="background-color: red;"></div>
-                        <span>Garis Pantai 2017</span>
-                    `;
-                    legendaContainer.appendChild(garisPantaiLegend);
+                    garisPantaiLegends.push({ color: 'red', text: 'Garis Pantai 2017' });
+                }
+
+                if (kerentananLegends.length > 0) {
+                    const kerentananDetails = document.createElement('details');
+                    kerentananDetails.className = 'legend-details';
+                    kerentananDetails.open = true;
+                    const kerentananSummary = document.createElement('summary');
+                    kerentananSummary.className = 'legend-summary';
+                    kerentananSummary.innerHTML = `Variabel Kerentanan <i class="fas fa-chevron-down"></i>`;
+                    kerentananDetails.appendChild(kerentananSummary);
+
+                    const kerentananContent = document.createElement('div');
+                    kerentananContent.className = 'legend-dropdown-content';
+                    kerentananLegends.forEach(section => {
+                        const sectionDiv = document.createElement('div');
+                        sectionDiv.className = 'legend-section';
+
+                        const titleEl = document.createElement('h5');
+                        titleEl.className = 'legend-subsection-title';
+                        titleEl.textContent = section.title;
+                        sectionDiv.appendChild(titleEl);
+
+                        section.data.forEach(item => {
+                            const legendItem = document.createElement('div');
+                            legendItem.className = 'legend-item';
+                            legendItem.innerHTML = `
+                                <div class="legend-color-box" style="background-color: ${item.color};"></div>
+                                <span>${item.text}</span>
+                            `;
+                            sectionDiv.appendChild(legendItem);
+                        });
+                        kerentananContent.appendChild(sectionDiv);
+                    });
+                    kerentananDetails.appendChild(kerentananContent);
+                    legendaContainer.appendChild(kerentananDetails);
                     hasLegend = true;
                 }
-                
+
+                if (garisPantaiLegends.length > 0) {
+                    const garisPantaiDetails = document.createElement('details');
+                    garisPantaiDetails.className = 'legend-details';
+                    garisPantaiDetails.open = true;
+                    const garisPantaiSummary = document.createElement('summary');
+                    garisPantaiSummary.className = 'legend-summary';
+                    garisPantaiSummary.innerHTML = `Garis Pantai <i class="fas fa-chevron-down"></i>`;
+                    garisPantaiDetails.appendChild(garisPantaiSummary);
+
+                    const garisPantaiContent = document.createElement('div');
+                    garisPantaiContent.className = 'legend-dropdown-content';
+                    garisPantaiLegends.forEach(item => {
+                        const legendItem = document.createElement('div');
+                        legendItem.className = 'legend-item';
+                        legendItem.innerHTML = `
+                            <div class="legend-color-box" style="background-color: ${item.color};"></div>
+                            <span>${item.text}</span>
+                        `;
+                        garisPantaiContent.appendChild(legendItem);
+                    });
+                    garisPantaiDetails.appendChild(garisPantaiContent);
+                    legendaContainer.appendChild(garisPantaiDetails);
+                    hasLegend = true;
+                }
+
                 if (hasLegend) {
                     noLegendText.style.display = 'none';
                 } else {
                     noLegendText.style.display = 'block';
                 }
             }
-            
+
             // Fungsi untuk menentukan style berdasarkan skor
             function styleVARKERLayer(feature) {
                 const skor = feature.properties.SKOR;
@@ -1026,12 +1243,12 @@
                     weight: 3
                 };
             }
-            
+
             // Fungsi untuk menentukan style garis pantai berdasarkan filter
             function styleGarisPantai(feature, year) {
                 const selectedKecamatan = kecamatanFilter.value.toLowerCase();
                 const selectedDesa = desaFilter.value.toLowerCase();
-                
+
                 const featureKec = (feature.properties.Kec || '').toLowerCase();
                 const featureDesa = (feature.properties.Desa || '').toLowerCase();
 
@@ -1044,7 +1261,7 @@
                 if (selectedDesa && featureDesa !== selectedDesa) {
                     isVisible = false;
                 }
-                
+
                 const color = (year === 2017) ? 'red' : 'blue';
 
                 return {
@@ -1062,10 +1279,16 @@
 
                 if (layerName === 'slrln') {
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/SLRLN.geojson';
-                    styleFunction = () => ({ color: '#FFA500', weight: 3 });
+                    styleFunction = () => ({
+                        color: '#FFA500',
+                        weight: 3
+                    });
                 } else if (layerName === 'waveln') {
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/WAVELN.geojson';
-                    styleFunction = () => ({ color: '#008000', weight: 3 });
+                    styleFunction = () => ({
+                        color: '#008000',
+                        weight: 3
+                    });
                 } else if (layerName === 'glgln') {
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/GLGLN.geojson';
                     styleFunction = styleVARKERLayer;
@@ -1079,7 +1302,7 @@
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20170821.geojson';
                     styleFunction = (feature) => styleGarisPantai(feature, 2017);
                 }
-                
+
                 onEachFeatureFunction = (feature, layer) => {
                     if (feature.properties) {
                         let popupContent = '<table>';
@@ -1093,7 +1316,13 @@
                     }
                 };
 
-                map.spin(true, { lines: 13, length: 10, width: 5, radius: 15, scale: 0.5 });
+                map.spin(true, {
+                    lines: 13,
+                    length: 10,
+                    width: 5,
+                    radius: 15,
+                    scale: 0.5
+                });
 
                 try {
                     const response = await fetch(geojsonUrl);
@@ -1116,12 +1345,12 @@
                     return null;
                 }
             }
-            
+
             // Fungsi untuk memperbarui dropdown filter berdasarkan layer garis pantai yang aktif
             function updateFilterDropdowns() {
                 const kecSet = new Set();
                 const desaSet = new Set();
-                
+
                 activeGarisPantaiLayers.forEach(layerName => {
                     const data = geojsonData[layerName];
                     if (data) {
@@ -1138,7 +1367,7 @@
 
                 const sortedKecamatan = Array.from(kecSet).sort();
                 const sortedDesa = Array.from(desaSet).sort();
-                
+
                 kecamatanFilter.innerHTML = '<option value="">-- Semua Kecamatan --</option>';
                 sortedKecamatan.forEach(kec => {
                     const option = document.createElement('option');
@@ -1146,7 +1375,7 @@
                     option.textContent = kec;
                     kecamatanFilter.appendChild(option);
                 });
-                
+
                 // Tambahkan event listener untuk memfilter desa berdasarkan kecamatan
                 kecamatanFilter.onchange = () => {
                     const selectedKecamatan = kecamatanFilter.value;
@@ -1165,7 +1394,7 @@
                     } else {
                         sortedDesa.forEach(desa => filteredDesaSet.add(desa));
                     }
-                    
+
                     const sortedFilteredDesa = Array.from(filteredDesaSet).sort();
                     desaFilter.innerHTML = '<option value="">-- Semua Desa --</option>';
                     sortedFilteredDesa.forEach(desa => {
@@ -1186,7 +1415,7 @@
                     resetButton.style.display = 'none';
                 }
             }
-            
+
             // Handle dropdown perubahan filter
             kecamatanFilter.addEventListener('change', () => {
                 if (garisPantai2016Layer) {
@@ -1197,7 +1426,7 @@
                 }
                 toggleResetButton();
             });
-            
+
             desaFilter.addEventListener('change', () => {
                 if (garisPantai2016Layer) {
                     garisPantai2016Layer.setStyle(feature => styleGarisPantai(feature, 2016));
@@ -1236,7 +1465,7 @@
                 group.addEventListener('change', async (e) => {
                     const layerValue = e.target.value;
                     const isChecked = e.target.checked;
-                    
+
                     if (layerValue === 'garis-pantai-2016' || layerValue === 'garis-pantai-2017') {
                         if (isChecked) {
                             activeGarisPantaiLayers.push(layerValue);
@@ -1263,12 +1492,12 @@
                                 map.removeLayer(garisPantai2017Layer);
                             }
                         }
-                        
+
                         if (activeGarisPantaiLayers.length > 0) {
-                             filterInitialText.style.display = 'none';
-                             kecamatanFilterGroup.style.display = 'block';
-                             desaFilterGroup.style.display = 'block';
-                             updateFilterDropdowns(); // Perbarui dropdown dengan data gabungan
+                            filterInitialText.style.display = 'none';
+                            kecamatanFilterGroup.style.display = 'block';
+                            desaFilterGroup.style.display = 'block';
+                            updateFilterDropdowns(); // Perbarui dropdown dengan data gabungan
                         } else {
                             kecamatanFilter.value = '';
                             desaFilter.value = '';
@@ -1335,203 +1564,265 @@
                 });
             });
 
-            // Add event listener for the button inside the popup
+            // Fungsi untuk menampilkan visualisasi
+            function renderVisualisasi() {
+                visualisasiTabContent.innerHTML = '';
+
+                // Show/hide navigation buttons based on the number of items
+                if (visualisasiItems.length > 1) {
+                    prevBtn.style.display = 'block';
+                    nextBtn.style.display = 'block';
+                } else {
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                }
+
+                if (visualisasiItems.length === 0) {
+                    visualisasiTabContent.innerHTML = '<p style="text-align: center; color: #777;">Tidak ada visualisasi untuk ditampilkan.</p>';
+                    return;
+                }
+
+                const item = visualisasiItems[currentVisualisasiIndex];
+                visualisasiTabTitle.textContent = item.title;
+
+                const innerContent = document.createElement('div');
+                innerContent.className = 'visualisasi-tab-content-inner';
+
+                if (item.type === 'image-comparison') {
+                    const comparisonWrapper = document.createElement('div');
+                    comparisonWrapper.className = 'image-comparison';
+
+                    const image1 = document.createElement('img');
+                    image1.src = item.image1.url;
+                    image1.alt = item.image1.alt;
+
+                    const image2Wrapper = document.createElement('div');
+                    image2Wrapper.className = 'image-comparison-wave';
+                    const image2 = document.createElement('img');
+                    image2.src = item.image2.url;
+                    image2.alt = item.image2.alt;
+                    image2Wrapper.appendChild(image2);
+
+                    const slider = document.createElement('div');
+                    slider.className = 'image-comparison-slider';
+
+                    comparisonWrapper.appendChild(image1);
+                    comparisonWrapper.appendChild(image2Wrapper);
+                    comparisonWrapper.appendChild(slider);
+                    innerContent.appendChild(comparisonWrapper);
+
+                    let isDragging = false;
+                    slider.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        isDragging = true;
+                    });
+                    document.addEventListener('mouseup', () => {
+                        isDragging = false;
+                    });
+                    document.addEventListener('mousemove', (e) => {
+                        if (isDragging) {
+                            const rect = comparisonWrapper.getBoundingClientRect();
+                            let newX = e.clientX - rect.left;
+                            if (newX < 0) newX = 0;
+                            if (newX > rect.width) newX = rect.width;
+
+                            const percentage = (newX / rect.width) * 100;
+                            image2Wrapper.style.width = `${percentage}%`;
+                            slider.style.left = `${percentage}%`;
+                        }
+                    });
+                } else if (item.type === 'image') {
+                    const imageWrapper = document.createElement('div');
+                    imageWrapper.className = 'image-wrapper';
+                    const img = document.createElement('img');
+                    img.className = 'visualisasi-image';
+                    img.src = item.url;
+                    img.alt = item.title;
+                    imageWrapper.appendChild(img);
+
+                    const controls = document.createElement('div');
+                    controls.className = 'image-controls zoom-only';
+                    controls.innerHTML = `
+                        <button class="image-control-btn zoom-in-btn"><i class="fas fa-plus"></i></button>
+                        <button class="image-control-btn zoom-out-btn"><i class="fas fa-minus"></i></button>
+                        <button class="image-control-btn reset-zoom-btn"><i class="fas fa-sync-alt"></i></button>
+                    `;
+                    innerContent.appendChild(imageWrapper);
+                    innerContent.appendChild(controls);
+
+                    let currentZoom = 1.0;
+                    let panX = 0;
+                    let panY = 0;
+                    let isDragging = false;
+                    let startX, startY;
+                    const updateImageTransform = () => {
+                        img.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
+                    };
+                    controls.querySelector('.zoom-in-btn').addEventListener('click', () => {
+                        currentZoom += 0.2;
+                        updateImageTransform();
+                    });
+                    controls.querySelector('.zoom-out-btn').addEventListener('click', () => {
+                        if (currentZoom > 1.0) {
+                            currentZoom -= 0.2;
+                            updateImageTransform();
+                        }
+                    });
+                    controls.querySelector('.reset-zoom-btn').addEventListener('click', () => {
+                        currentZoom = 1.0;
+                        panX = 0;
+                        panY = 0;
+                        updateImageTransform();
+                    });
+                    imageWrapper.addEventListener('mousedown', (e) => {
+                        if (currentZoom > 1.0) {
+                            isDragging = true;
+                            imageWrapper.classList.add('is-dragging');
+                            startX = e.clientX - panX;
+                            startY = e.clientY - panY;
+                        }
+                    });
+                    imageWrapper.addEventListener('mousemove', (e) => {
+                        if (isDragging) {
+                            panX = e.clientX - startX;
+                            panY = e.clientY - startY;
+                            updateImageTransform();
+                        }
+                    });
+                    imageWrapper.addEventListener('mouseup', () => {
+                        isDragging = false;
+                        imageWrapper.classList.remove('is-dragging');
+                    });
+                    imageWrapper.addEventListener('mouseleave', () => {
+                        isDragging = false;
+                        imageWrapper.classList.remove('is-dragging');
+                    });
+                }
+
+                visualisasiTabContent.appendChild(innerContent);
+                updateNavButtons();
+            }
+
+            // Fungsi untuk memperbarui status tombol navigasi
+            function updateNavButtons() {
+                if (visualisasiItems.length > 1) {
+                    prevBtn.style.display = 'block';
+                    nextBtn.style.display = 'block';
+                    prevBtn.disabled = currentVisualisasiIndex === 0;
+                    nextBtn.disabled = currentVisualisasiIndex === visualisasiItems.length - 1;
+                } else {
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                }
+            }
+
+            // Tambahkan event listener untuk tombol navigasi
+            prevBtn.addEventListener('click', () => {
+                if (currentVisualisasiIndex > 0) {
+                    currentVisualisasiIndex--;
+                    renderVisualisasi();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentVisualisasiIndex < visualisasiItems.length - 1) {
+                    currentVisualisasiIndex++;
+                    renderVisualisasi();
+                }
+            });
+
+            // Tambahkan fungsionalitas drag-and-drop pada tab visualisasi
+            let isDraggingVisualisasi = false;
+            let offset = {
+                x: 0,
+                y: 0
+            };
+
+            visualisasiTabHeader.addEventListener('mousedown', (e) => {
+                isDraggingVisualisasi = true;
+                visualisasiTabContainer.classList.add('is-dragging');
+                offset.x = e.clientX - visualisasiTabContainer.offsetLeft;
+                offset.y = e.clientY - visualisasiTabContainer.offsetTop;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDraggingVisualisasi = false;
+                visualisasiTabContainer.classList.remove('is-dragging');
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDraggingVisualisasi) {
+                    const newX = e.clientX - offset.x;
+                    const newY = e.clientY - offset.y;
+
+                    visualisasiTabContainer.style.left = `${newX}px`;
+                    visualisasiTabContainer.style.top = `${newY}px`;
+                    visualisasiTabContainer.style.transform = 'none';
+                }
+            });
+
+            // Tambahkan event listener untuk tombol di dalam popup
             map.on('popupopen', function () {
                 const btn = document.querySelector('.show-image-btn');
                 if (btn) {
                     btn.addEventListener('click', () => {
                         const slrCheckbox = document.querySelector('input[value="slrln"]');
                         const waveCheckbox = document.querySelector('input[value="waveln"]');
+                        const glglnCheckbox = document.querySelector('input[value="glgln"]');
+                        const slplnCheckbox = document.querySelector('input[value="slpln"]');
 
-                        // Sembunyikan pesan awal jika ada
-                        informasiText.style.display = 'none';
+                        // Clear the visualization items and populate based on checkboxes
+                        visualisasiItems = [];
 
-                        // Buka menu Informasi dan tandai sebagai aktif
-                        menuDivs.forEach(div => div.classList.remove('show'));
-                        menuItems.forEach(item => item.classList.remove('active'));
-                        const infoMenu = document.getElementById('informasi-menu');
-                        const infoMenuItem = document.querySelector('.sidemenu-item[data-target="informasi-menu"]');
-                        infoMenu.classList.add('show');
-                        infoMenuItem.classList.add('active');
-                        mainContent.classList.add('pushed-by-sidemenu');
-                        sideMenu.classList.add('show-sidemenu');
-                        menuToggleIcon.classList.remove('fa-bars');
-                        menuToggleIcon.classList.add('fa-arrow-left');
-
-                        // Buat elemen visualisasi baru
-                        const visualisasiItem = document.createElement('div');
-                        visualisasiItem.className = 'visualisasi-item';
-
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = 'visualisasi-close-btn';
-                        closeBtn.innerHTML = '&times;';
-                        closeBtn.onclick = () => {
-                            visualisasiContainer.removeChild(visualisasiItem);
-                            if (visualisasiContainer.children.length === 0) {
-                                informasiText.style.display = 'block';
-                            }
-                        };
-                        visualisasiItem.appendChild(closeBtn);
-
-                        if (slrCheckbox.checked && waveCheckbox.checked) {
-                            // Tampilkan komparasi gambar
-                            const comparisonWrapper = document.createElement('div');
-                            comparisonWrapper.className = 'image-comparison';
-
-                            const slrImage = document.createElement('img');
-                            slrImage.src = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png';
-                            slrImage.alt = 'Visualisasi Data SLR';
-                            slrImage.className = 'slr-image';
-
-                            const waveImageWrapper = document.createElement('div');
-                            waveImageWrapper.className = 'image-comparison-wave';
-                            const waveImage = document.createElement('img');
-                            waveImage.src = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png';
-                            waveImage.alt = 'Visualisasi Data WAVE';
-                            waveImageWrapper.appendChild(waveImage);
-
-                            const slider = document.createElement('div');
-                            slider.className = 'image-comparison-slider';
-
-                            comparisonWrapper.appendChild(slrImage);
-                            comparisonWrapper.appendChild(waveImageWrapper);
-                            comparisonWrapper.appendChild(slider);
-                            visualisasiItem.appendChild(comparisonWrapper);
-
-                            let isDragging = false;
-                            slider.addEventListener('mousedown', (e) => {
-                                e.preventDefault();
-                                isDragging = true;
+                        if (slrCheckbox.checked) {
+                            visualisasiItems.push({
+                                type: 'image',
+                                title: 'Visualisasi Data SLR',
+                                url: 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png'
                             });
-                            document.addEventListener('mouseup', () => {
-                                isDragging = false;
+                        }
+                        if (waveCheckbox.checked) {
+                            visualisasiItems.push({
+                                type: 'image',
+                                title: 'Visualisasi Data WAVE',
+                                url: 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png'
                             });
-                            document.addEventListener('mousemove', (e) => {
-                                if (isDragging) {
-                                    const rect = comparisonWrapper.getBoundingClientRect();
-                                    let newX = e.clientX - rect.left;
-                                    if (newX < 0) newX = 0;
-                                    if (newX > rect.width) newX = rect.width;
-
-                                    const percentage = (newX / rect.width) * 100;
-                                    waveImageWrapper.style.width = `${percentage}%`;
-                                    slider.style.left = `${percentage}%`;
-                                }
+                        }
+                        if (glglnCheckbox.checked) {
+                            visualisasiItems.push({
+                                type: 'image',
+                                title: 'Visualisasi Data GLG',
+                                url: 'https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+GLG'
                             });
-
-                            const title = document.createElement('h4');
-                            title.textContent = 'Perbandingan Visualisasi SLR dan WAVE';
-                            visualisasiItem.insertBefore(title, comparisonWrapper);
-
-                        } else {
-                            // Tampilkan satu gambar seperti sebelumnya
-                            const layerName = btn.getAttribute('data-layer-name');
-                            let imageUrl = '';
-                            let headingText = '';
-
-                            if (layerName === 'slrln') {
-                                imageUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png';
-                                headingText = 'Visualisasi Data SLR';
-                            } else if (layerName === 'waveln') {
-                                imageUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png';
-                                headingText = 'Visualisasi Data WAVE';
-                            } else if (layerName === 'glgln') {
-                                imageUrl = 'https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+GLG'; // Placeholder image for GLG
-                                headingText = 'Visualisasi Data GLG';
-                            } else if (layerName === 'slpln') {
-                                imageUrl = 'https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+SLP'; // Placeholder image for GLG
-                                headingText = 'Visualisasi Data SLP';
-                            } else if (layerName === 'garis-pantai-2016') {
-                                imageUrl = 'https://placehold.co/800x600/0000FF/FFFFFF?text=Visualisasi+Garis+Pantai+2016';
-                                headingText = 'Visualisasi Garis Pantai 2016';
-                            } else if (layerName === 'garis-pantai-2017') {
-                                imageUrl = 'https://placehold.co/800x600/FF0000/FFFFFF?text=Visualisasi+Garis+Pantai+2017';
-                                headingText = 'Visualisasi Garis Pantai 2017';
-                            }
-
-                            const title = document.createElement('h4');
-                            title.textContent = headingText;
-
-                            const imageWrapper = document.createElement('div');
-                            imageWrapper.className = 'image-wrapper';
-
-                            const img = document.createElement('img');
-                            img.className = 'visualisasi-image';
-                            img.src = imageUrl;
-                            img.alt = headingText;
-                            imageWrapper.appendChild(img);
-
-                            const controls = document.createElement('div');
-                            controls.className = 'image-controls';
-                            controls.innerHTML = `
-                                <button class="image-control-btn zoom-in-btn"><i class="fas fa-plus"></i></button>
-                                <button class="image-control-btn zoom-out-btn"><i class="fas fa-minus"></i></button>
-                                <button class="image-control-btn reset-zoom-btn"><i class="fas fa-sync-alt"></i></button>
-                            `;
-
-                            visualisasiItem.appendChild(title);
-                            visualisasiItem.appendChild(imageWrapper);
-                            visualisasiItem.appendChild(controls);
-
-                            // Tambahkan event listeners untuk visualisasi baru
-                            let currentZoom = 1.0;
-                            let panX = 0;
-                            let panY = 0;
-                            let isDragging = false;
-                            let startX, startY;
-
-                            const updateImageTransform = () => {
-                                img.style.transform = `scale(${currentZoom}) translate(${panX}px, ${panY}px)`;
-                            };
-
-                            controls.querySelector('.zoom-in-btn').addEventListener('click', () => {
-                                currentZoom += 0.2;
-                                updateImageTransform();
-                            });
-
-                            controls.querySelector('.zoom-out-btn').addEventListener('click', () => {
-                                if (currentZoom > 1.0) {
-                                    currentZoom -= 0.2;
-                                    updateImageTransform();
-                                }
-                            });
-
-                            controls.querySelector('.reset-zoom-btn').addEventListener('click', () => {
-                                currentZoom = 1.0;
-                                panX = 0;
-                                panY = 0;
-                                updateImageTransform();
-                            });
-
-                            imageWrapper.addEventListener('mousedown', (e) => {
-                                if (currentZoom > 1.0) {
-                                    isDragging = true;
-                                    imageWrapper.classList.add('is-dragging');
-                                    startX = e.clientX - panX;
-                                    startY = e.clientY - panY;
-                                }
-                            });
-
-                            imageWrapper.addEventListener('mousemove', (e) => {
-                                if (isDragging) {
-                                    panX = e.clientX - startX;
-                                    panY = e.clientY - startY;
-                                    updateImageTransform();
-                                }
-                            });
-
-                            imageWrapper.addEventListener('mouseup', () => {
-                                isDragging = false;
-                                imageWrapper.classList.remove('is-dragging');
-                            });
-
-                            imageWrapper.addEventListener('mouseleave', () => {
-                                isDragging = false;
-                                imageWrapper.classList.remove('is-dragging');
+                        }
+                        if (slplnCheckbox.checked) {
+                            visualisasiItems.push({
+                                type: 'image',
+                                title: 'Visualisasi Data SLP',
+                                url: 'https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+SLP'
                             });
                         }
 
-                        visualisasiContainer.appendChild(visualisasiItem);
+                        // Handle image comparison if both SLR and WAVE are selected
+                        if (slrCheckbox.checked && waveCheckbox.checked) {
+                            visualisasiItems.push({
+                                type: 'image-comparison',
+                                title: 'Perbandingan Visualisasi SLR dan WAVE',
+                                image1: {
+                                    url: 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png',
+                                    alt: 'Visualisasi Data SLR'
+                                },
+                                image2: {
+                                    url: 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png',
+                                    alt: 'Visualisasi Data WAVE'
+                                }
+                            });
+                        }
+
+                        // Open the tab and render the first item
+                        visualisasiTabContainer.style.display = 'flex';
+                        currentVisualisasiIndex = 0;
+                        renderVisualisasi();
                     });
                 }
             });
@@ -1542,7 +1833,13 @@
 
             geolocationBtn.addEventListener('click', () => {
                 if ('geolocation' in navigator) {
-                    map.spin(true, { lines: 13, length: 10, width: 5, radius: 15, scale: 0.5 });
+                    map.spin(true, {
+                        lines: 13,
+                        length: 10,
+                        width: 5,
+                        radius: 15,
+                        scale: 0.5
+                    });
 
                     navigator.geolocation.getCurrentPosition(
                         (position) => {
@@ -1618,18 +1915,38 @@
 
                 // Urutkan layer berdasarkan prioritas
                 const layers = [
-                    { layer: waveLayer, hasLayer: waveLayer && map.hasLayer(waveLayer) },
-                    { layer: slrlnLayer, hasLayer: slrlnLayer && map.hasLayer(slrlnLayer) },
-                    { layer: glglnLayer, hasLayer: glglnLayer && map.hasLayer(glglnLayer) },
-                    { layer: slplnLayer, hasLayer: slplnLayer && map.hasLayer(slplnLayer) },
-                    { layer: garisPantai2017Layer, hasLayer: garisPantai2017Layer && map.hasLayer(garisPantai2017Layer) },
-                    { layer: garisPantai2016Layer, hasLayer: garisPantai2016Layer && map.hasLayer(garisPantai2016Layer) }
+                    {
+                        layer: waveLayer,
+                        hasLayer: waveLayer && map.hasLayer(waveLayer)
+                    },
+                    {
+                        layer: slrlnLayer,
+                        hasLayer: slrlnLayer && map.hasLayer(slrlnLayer)
+                    },
+                    {
+                        layer: glglnLayer,
+                        hasLayer: glglnLayer && map.hasLayer(glglnLayer)
+                    },
+                    {
+                        layer: slplnLayer,
+                        hasLayer: slplnLayer && map.hasLayer(slplnLayer)
+                    },
+                    {
+                        layer: garisPantai2017Layer,
+                        hasLayer: garisPantai2017Layer && map.hasLayer(garisPantai2017Layer)
+                    },
+                    {
+                        layer: garisPantai2016Layer,
+                        hasLayer: garisPantai2016Layer && map.hasLayer(garisPantai2016Layer)
+                    }
                 ];
 
                 // Cek layer pertama yang sudah ada di peta dan terapkan opasitas
                 const topLayer = layers.find(l => l.hasLayer);
                 if (topLayer) {
-                    topLayer.layer.setStyle({ opacity: opacity });
+                    topLayer.layer.setStyle({
+                        opacity: opacity
+                    });
                 }
             });
 
