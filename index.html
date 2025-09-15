@@ -456,10 +456,6 @@
             margin-bottom: 10px;
         }
 
-        .layer-item label {
-            flex-grow: 1;
-        }
-
         .table-icon {
             cursor: pointer;
             margin-left: 10px;
@@ -493,6 +489,50 @@
         #table-content th {
             background-color: #e0e0e0;
             font-weight: bold;
+        }
+
+        /* Styles for the dropdown */
+        details {
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        summary {
+            font-weight: bold;
+            padding: 12px 15px;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #333;
+        }
+
+        summary::-webkit-details-marker,
+        summary::marker {
+            display: none;
+        }
+
+        summary i {
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        details[open] summary i {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-content {
+            padding: 10px 15px 5px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .filter-group {
+            display: none;
         }
     </style>
 </head>
@@ -529,6 +569,10 @@
             <i class="fas fa-sliders-h"></i>
             <span>Slider</span>
         </div>
+        <div class="sidemenu-item" data-target="filter-menu">
+            <i class="fas fa-filter"></i>
+            <span>Filter</span>
+        </div>
         <div class="sidemenu-item" data-target="informasi-menu">
             <i class="fas fa-info-circle"></i>
             <span>Informasi</span>
@@ -546,48 +590,73 @@
             <button class="close-button" data-target-close="layer-menu">&times;</button>
         </div>
         <div class="menu-content">
-            <h4>Basemap</h4>
-            <div id="basemap-controls" class="radio-group">
-                <label>
-                    <input type="radio" name="basemap" value="esri-bw" checked> Esri Hitam & Putih
-                </label>
-                <label>
-                    <input type="radio" name="basemap" value="osm"> OpenStreetMap
-                </label>
-                <label>
-                    <input type="radio" name="basemap" value="esri-satelit"> Esri World Imagery
-                </label>
-            </div>
 
-            <hr style="margin: 15px 0;">
+            <!-- Basemap Dropdown -->
+            <details open>
+                <summary>Basemap <i class="fas fa-chevron-down"></i></summary>
+                <div id="basemap-controls" class="radio-group dropdown-content">
+                    <label>
+                        <input type="radio" name="basemap" value="esri-bw" checked> Esri Hitam & Putih
+                    </label>
+                    <label>
+                        <input type="radio" name="basemap" value="osm"> OpenStreetMap
+                    </label>
+                    <label>
+                        <input type="radio" name="basemap" value="esri-satelit"> Esri World Imagery
+                    </label>
+                </div>
+            </details>
 
-            <h4>Layers</h4>
-            <div id="overlay-controls" class="checkbox-group">
-                <div class="layer-item">
-                    <label>
-                        <input type="checkbox" name="overlay" value="slrln"> SLR Line
-                    </label>
-                    <i class="fas fa-table table-icon" data-layer="slrln"></i>
+            <!-- Variabel Kerentanan Dropdown -->
+            <details>
+                <summary>Variabel Kerentanan <i class="fas fa-chevron-down"></i></summary>
+                <div class="checkbox-group dropdown-content">
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="slrln"> SLR Line
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="slrln"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="waveln"> WAVE Line
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="waveln"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="glgln"> GLG Line
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="glgln"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="slpln"> SLP Line
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="slpln"></i>
+                    </div>
                 </div>
-                <div class="layer-item">
-                    <label>
-                        <input type="checkbox" name="overlay" value="waveln"> WAVE Line
-                    </label>
-                    <i class="fas fa-table table-icon" data-layer="waveln"></i>
+            </details>
+
+            <!-- Garis Pantai Dropdown -->
+            <details>
+                <summary>Garis Pantai <i class="fas fa-chevron-down"></i></summary>
+                <div class="checkbox-group dropdown-content">
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="garis-pantai-2016"> Garis Pantai 2016
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="garis-pantai-2016"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="garis-pantai-2017"> Garis Pantai 2017
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="garis-pantai-2017"></i>
+                    </div>
                 </div>
-                <div class="layer-item">
-                    <label>
-                        <input type="checkbox" name="overlay" value="glgln"> GLG Line
-                    </label>
-                    <i class="fas fa-table table-icon" data-layer="glgln"></i>
-                </div>
-                <div class="layer-item">
-                    <label>
-                        <input type="checkbox" name="overlay" value="slpln"> SLP Line
-                    </label>
-                    <i class="fas fa-table table-icon" data-layer="slpln"></i>
-                </div>
-            </div>
+            </details>
+
         </div>
     </div>
 
@@ -616,6 +685,39 @@
                 <span>Transparan</span>
                 <span>Buram</span>
             </div>
+        </div>
+    </div>
+
+    <!-- New Filter Menu -->
+    <div id="filter-menu" class="menu-div">
+        <div class="menu-top">
+            <h3>Filter</h3>
+            <button class="close-button" data-target-close="filter-menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <p id="filter-initial-text" style="text-align: center; color: #777;">Pilih layer di menu 'Layer' untuk menampilkan opsi filter.</p>
+            
+            <div id="kecamatan-filter-group" class="filter-group">
+                <h4>Filter Berdasarkan Kecamatan</h4>
+                <div class="select-group">
+                    <select id="kecamatan-filter">
+                        <option value="">-- Pilih Kecamatan --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="desa-filter-group" class="filter-group">
+                <h4>Filter Berdasarkan Desa</h4>
+                <div class="select-group">
+                    <select id="desa-filter">
+                        <option value="">-- Pilih Desa --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <hr style="margin: 15px 0;">
+            <button id="reset-filter-btn" style="width: 100%; padding: 10px; background-color: #ef4444; color: white; border: none; cursor: pointer; display: none;">Reset Filter</button>
+            <hr style="margin: 15px 0;">
         </div>
     </div>
 
@@ -675,6 +777,13 @@
             const tableContent = document.getElementById('table-content');
             const legendaContainer = document.getElementById('legenda-container');
             const noLegendText = document.getElementById('no-legend-text');
+            const filterInitialText = document.getElementById('filter-initial-text');
+            const kecamatanFilterGroup = document.getElementById('kecamatan-filter-group');
+            const kecamatanFilter = document.getElementById('kecamatan-filter');
+            const desaFilterGroup = document.getElementById('desa-filter-group');
+            const desaFilter = document.getElementById('desa-filter');
+            const layerCheckboxes = document.querySelectorAll('input[name="overlay"]');
+            const resetButton = document.getElementById('reset-filter-btn');
 
             // Initialize Leaflet map
             var map = L.map('map').setView([-8.65, 115.15], 11);
@@ -697,7 +806,10 @@
             let waveLayer = null;
             let glglnLayer = null;
             let slplnLayer = null;
+            let garisPantai2016Layer = null;
+            let garisPantai2017Layer = null;
             let geojsonData = {};
+            let activeGarisPantaiLayers = [];
 
             // Adjust map size when layout changes
             const resizeObserver = new ResizeObserver(() => {
@@ -820,7 +932,7 @@
 
                     // Tambahkan judul legenda di sini
                     const legendTitle = document.createElement('h4'); // Atau p, h5, dll.
-                    legendTitle.className = 'legend-title';
+                    legendTitle.className = 'legend-group-title';
                     legendTitle.textContent = 'Geologi'; // Ganti dengan judul yang kamu inginkan
                     legendaContainer.appendChild(legendTitle);
 
@@ -848,7 +960,7 @@
 
                     // Tambahkan judul legenda di sini
                     const legendTitle = document.createElement('h4'); // Atau p, h5, dll.
-                    legendTitle.className = 'legend-title';
+                    legendTitle.className = 'legend-group-title';
                     legendTitle.textContent = 'Slope';
                     legendaContainer.appendChild(legendTitle);
 
@@ -864,14 +976,36 @@
 
                     hasLegend = true;
                 }
-
+                
+                if (garisPantai2016Layer && map.hasLayer(garisPantai2016Layer)) {
+                    const garisPantaiLegend = document.createElement('div');
+                    garisPantaiLegend.className = 'legend-item';
+                    garisPantaiLegend.innerHTML = `
+                        <div class="legend-color-box" style="background-color: blue;"></div>
+                        <span>Garis Pantai 2016</span>
+                    `;
+                    legendaContainer.appendChild(garisPantaiLegend);
+                    hasLegend = true;
+                }
+                
+                if (garisPantai2017Layer && map.hasLayer(garisPantai2017Layer)) {
+                    const garisPantaiLegend = document.createElement('div');
+                    garisPantaiLegend.className = 'legend-item';
+                    garisPantaiLegend.innerHTML = `
+                        <div class="legend-color-box" style="background-color: red;"></div>
+                        <span>Garis Pantai 2017</span>
+                    `;
+                    legendaContainer.appendChild(garisPantaiLegend);
+                    hasLegend = true;
+                }
+                
                 if (hasLegend) {
                     noLegendText.style.display = 'none';
                 } else {
                     noLegendText.style.display = 'block';
                 }
             }
-
+            
             // Fungsi untuk menentukan style berdasarkan skor
             function styleVARKERLayer(feature) {
                 const skor = feature.properties.SKOR;
@@ -892,11 +1026,39 @@
                     weight: 3
                 };
             }
+            
+            // Fungsi untuk menentukan style garis pantai berdasarkan filter
+            function styleGarisPantai(feature, year) {
+                const selectedKecamatan = kecamatanFilter.value.toLowerCase();
+                const selectedDesa = desaFilter.value.toLowerCase();
+                
+                const featureKec = (feature.properties.Kec || '').toLowerCase();
+                const featureDesa = (feature.properties.Desa || '').toLowerCase();
+
+                let isVisible = true;
+
+                if (selectedKecamatan && featureKec !== selectedKecamatan) {
+                    isVisible = false;
+                }
+
+                if (selectedDesa && featureDesa !== selectedDesa) {
+                    isVisible = false;
+                }
+                
+                const color = (year === 2017) ? 'red' : 'blue';
+
+                return {
+                    color: isVisible ? color : 'transparent',
+                    weight: isVisible ? 2 : 0,
+                    opacity: isVisible ? 1 : 0
+                };
+            }
 
             // Fungsi untuk memuat data GeoJSON
             async function loadGeoJSONLayer(layerName) {
                 let geojsonUrl = '';
                 let styleFunction;
+                let onEachFeatureFunction;
 
                 if (layerName === 'slrln') {
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/SLRLN.geojson';
@@ -905,12 +1067,31 @@
                     geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/WAVELN.geojson';
                     styleFunction = () => ({ color: '#008000', weight: 3 });
                 } else if (layerName === 'glgln') {
-                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/VARLN/GLGLN.geojson';
+                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/GLGLN.geojson';
                     styleFunction = styleVARKERLayer;
                 } else if (layerName === 'slpln') {
-                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/VARLN/SLPLN.geojson';
+                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/SLPLN.geojson';
                     styleFunction = styleVARKERLayer;
+                } else if (layerName === 'garis-pantai-2016') {
+                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20160309.geojson';
+                    styleFunction = (feature) => styleGarisPantai(feature, 2016);
+                } else if (layerName === 'garis-pantai-2017') {
+                    geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20170821.geojson';
+                    styleFunction = (feature) => styleGarisPantai(feature, 2017);
                 }
+                
+                onEachFeatureFunction = (feature, layer) => {
+                    if (feature.properties) {
+                        let popupContent = '<table>';
+                        for (let key in feature.properties) {
+                            if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== null && feature.properties[key] !== '') {
+                                popupContent += `<tr><td><b>${key}</b></td><td>: ${feature.properties[key]}</td></tr>`;
+                            }
+                        }
+                        popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Visualisasi</button>`;
+                        layer.bindPopup(popupContent);
+                    }
+                };
 
                 map.spin(true, { lines: 13, length: 10, width: 5, radius: 15, scale: 0.5 });
 
@@ -924,19 +1105,7 @@
 
                     const layer = L.geoJSON(data, {
                         style: styleFunction,
-                        onEachFeature: (feature, layer) => {
-                            if (feature.properties) {
-                                let popupContent = '<table>';
-                                for (let key in feature.properties) {
-                                    if (feature.properties.hasOwnProperty(key) && feature.properties[key] !== null && feature.properties[key] !== '') {
-                                        popupContent += `<tr><td><b>${key}</b></td><td>: ${feature.properties[key]}</td></tr>`;
-                                    }
-                                }
-                                // Tambahkan tombol dengan data-layer-name untuk identifikasi
-                                popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Visualisasi</button>`;
-                                layer.bindPopup(popupContent);
-                            }
-                        }
+                        onEachFeature: onEachFeatureFunction
                     });
 
                     map.spin(false);
@@ -947,67 +1116,223 @@
                     return null;
                 }
             }
+            
+            // Fungsi untuk memperbarui dropdown filter berdasarkan layer garis pantai yang aktif
+            function updateFilterDropdowns() {
+                const kecSet = new Set();
+                const desaSet = new Set();
+                
+                activeGarisPantaiLayers.forEach(layerName => {
+                    const data = geojsonData[layerName];
+                    if (data) {
+                        data.features.forEach(feature => {
+                            if (feature.properties && feature.properties.Kec) {
+                                kecSet.add(feature.properties.Kec);
+                            }
+                            if (feature.properties && feature.properties.Desa) {
+                                desaSet.add(feature.properties.Desa);
+                            }
+                        });
+                    }
+                });
 
-            // Add event listener for overlay controls
-            const overlayControls = document.getElementById('overlay-controls');
-            overlayControls.addEventListener('change', async (e) => {
-                const layerValue = e.target.value;
-                const isChecked = e.target.checked;
+                const sortedKecamatan = Array.from(kecSet).sort();
+                const sortedDesa = Array.from(desaSet).sort();
+                
+                kecamatanFilter.innerHTML = '<option value="">-- Semua Kecamatan --</option>';
+                sortedKecamatan.forEach(kec => {
+                    const option = document.createElement('option');
+                    option.value = kec;
+                    option.textContent = kec;
+                    kecamatanFilter.appendChild(option);
+                });
+                
+                // Tambahkan event listener untuk memfilter desa berdasarkan kecamatan
+                kecamatanFilter.onchange = () => {
+                    const selectedKecamatan = kecamatanFilter.value;
+                    const filteredDesaSet = new Set();
+                    if (selectedKecamatan) {
+                        activeGarisPantaiLayers.forEach(layerName => {
+                            const data = geojsonData[layerName];
+                            if (data) {
+                                data.features.forEach(feature => {
+                                    if (feature.properties && feature.properties.Desa && feature.properties.Kec.toLowerCase() === selectedKecamatan.toLowerCase()) {
+                                        filteredDesaSet.add(feature.properties.Desa);
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        sortedDesa.forEach(desa => filteredDesaSet.add(desa));
+                    }
+                    
+                    const sortedFilteredDesa = Array.from(filteredDesaSet).sort();
+                    desaFilter.innerHTML = '<option value="">-- Semua Desa --</option>';
+                    sortedFilteredDesa.forEach(desa => {
+                        const option = document.createElement('option');
+                        option.value = desa;
+                        option.textContent = desa;
+                        desaFilter.appendChild(option);
+                    });
+                    toggleResetButton();
+                };
+            }
 
-                if (layerValue === 'slrln') {
-                    if (isChecked) {
-                        if (!slrlnLayer) {
-                            slrlnLayer = await loadGeoJSONLayer('slrln');
-                        }
-                        if (slrlnLayer) {
-                            slrlnLayer.addTo(map);
-                        }
-                    } else {
-                        if (slrlnLayer) {
-                            map.removeLayer(slrlnLayer);
-                        }
-                    }
-                } else if (layerValue === 'waveln') {
-                    if (isChecked) {
-                        if (!waveLayer) {
-                            waveLayer = await loadGeoJSONLayer('waveln');
-                        }
-                        if (waveLayer) {
-                            waveLayer.addTo(map);
-                        }
-                    } else {
-                        if (waveLayer) {
-                            map.removeLayer(waveLayer);
-                        }
-                    }
-                } else if (layerValue === 'glgln') {
-                    if (isChecked) {
-                        if (!glglnLayer) {
-                            glglnLayer = await loadGeoJSONLayer('glgln');
-                        }
-                        if (glglnLayer) {
-                            glglnLayer.addTo(map);
-                        }
-                    } else {
-                        if (glglnLayer) {
-                            map.removeLayer(glglnLayer);
-                        }
-                    }
-                } else if (layerValue === 'slpln') {
-                    if (isChecked) {
-                        if (!slplnLayer) {
-                            slplnLayer = await loadGeoJSONLayer('slpln');
-                        }
-                        if (slplnLayer) {
-                            slplnLayer.addTo(map);
-                        }
-                    } else {
-                        if (slplnLayer) {
-                            map.removeLayer(slplnLayer);
-                        }
-                    }
+            // Fungsi untuk mengontrol visibilitas tombol reset
+            function toggleResetButton() {
+                if (kecamatanFilter.value !== '' || desaFilter.value !== '') {
+                    resetButton.style.display = 'block';
+                } else {
+                    resetButton.style.display = 'none';
                 }
-                updateLegend();
+            }
+            
+            // Handle dropdown perubahan filter
+            kecamatanFilter.addEventListener('change', () => {
+                if (garisPantai2016Layer) {
+                    garisPantai2016Layer.setStyle(feature => styleGarisPantai(feature, 2016));
+                }
+                if (garisPantai2017Layer) {
+                    garisPantai2017Layer.setStyle(feature => styleGarisPantai(feature, 2017));
+                }
+                toggleResetButton();
+            });
+            
+            desaFilter.addEventListener('change', () => {
+                if (garisPantai2016Layer) {
+                    garisPantai2016Layer.setStyle(feature => styleGarisPantai(feature, 2016));
+                }
+                if (garisPantai2017Layer) {
+                    garisPantai2017Layer.setStyle(feature => styleGarisPantai(feature, 2017));
+                }
+                toggleResetButton();
+            });
+
+            // Handle klik tombol "Reset Filter"
+            resetButton.addEventListener('click', () => {
+                // Reset nilai dropdown
+                kecamatanFilter.value = '';
+                desaFilter.value = '';
+
+                // Perbarui tampilan dropdown desa (untuk menghapus opsi filter sebelumnya)
+                kecamatanFilter.dispatchEvent(new Event('change'));
+
+                // Terapkan gaya kembali ke semua fitur di layer garis pantai
+                if (garisPantai2016Layer) {
+                    garisPantai2016Layer.setStyle(feature => styleGarisPantai(feature, 2016));
+                }
+                if (garisPantai2017Layer) {
+                    garisPantai2017Layer.setStyle(feature => styleGarisPantai(feature, 2017));
+                }
+                toggleResetButton();
+            });
+
+
+            // Dapatkan semua grup checkbox
+            const overlayControlGroups = document.querySelectorAll('.checkbox-group');
+
+            // Tambahkan event listener untuk setiap grup checkbox
+            overlayControlGroups.forEach(group => {
+                group.addEventListener('change', async (e) => {
+                    const layerValue = e.target.value;
+                    const isChecked = e.target.checked;
+                    
+                    if (layerValue === 'garis-pantai-2016' || layerValue === 'garis-pantai-2017') {
+                        if (isChecked) {
+                            activeGarisPantaiLayers.push(layerValue);
+                            if (layerValue === 'garis-pantai-2016') {
+                                if (!garisPantai2016Layer) {
+                                    garisPantai2016Layer = await loadGeoJSONLayer('garis-pantai-2016');
+                                }
+                                if (garisPantai2016Layer) {
+                                    garisPantai2016Layer.addTo(map);
+                                }
+                            } else {
+                                if (!garisPantai2017Layer) {
+                                    garisPantai2017Layer = await loadGeoJSONLayer('garis-pantai-2017');
+                                }
+                                if (garisPantai2017Layer) {
+                                    garisPantai2017Layer.addTo(map);
+                                }
+                            }
+                        } else {
+                            activeGarisPantaiLayers = activeGarisPantaiLayers.filter(item => item !== layerValue);
+                            if (layerValue === 'garis-pantai-2016' && garisPantai2016Layer) {
+                                map.removeLayer(garisPantai2016Layer);
+                            } else if (layerValue === 'garis-pantai-2017' && garisPantai2017Layer) {
+                                map.removeLayer(garisPantai2017Layer);
+                            }
+                        }
+                        
+                        if (activeGarisPantaiLayers.length > 0) {
+                             filterInitialText.style.display = 'none';
+                             kecamatanFilterGroup.style.display = 'block';
+                             desaFilterGroup.style.display = 'block';
+                             updateFilterDropdowns(); // Perbarui dropdown dengan data gabungan
+                        } else {
+                            kecamatanFilter.value = '';
+                            desaFilter.value = '';
+                            kecamatanFilterGroup.style.display = 'none';
+                            desaFilterGroup.style.display = 'none';
+                            filterInitialText.style.display = 'block';
+                        }
+                    } else { // Layer lain selain garis pantai
+                        if (layerValue === 'slrln') {
+                            if (isChecked) {
+                                if (!slrlnLayer) {
+                                    slrlnLayer = await loadGeoJSONLayer('slrln');
+                                }
+                                if (slrlnLayer) {
+                                    slrlnLayer.addTo(map);
+                                }
+                            } else {
+                                if (slrlnLayer) {
+                                    map.removeLayer(slrlnLayer);
+                                }
+                            }
+                        } else if (layerValue === 'waveln') {
+                            if (isChecked) {
+                                if (!waveLayer) {
+                                    waveLayer = await loadGeoJSONLayer('waveln');
+                                }
+                                if (waveLayer) {
+                                    waveLayer.addTo(map);
+                                }
+                            } else {
+                                if (waveLayer) {
+                                    map.removeLayer(waveLayer);
+                                }
+                            }
+                        } else if (layerValue === 'glgln') {
+                            if (isChecked) {
+                                if (!glglnLayer) {
+                                    glglnLayer = await loadGeoJSONLayer('glgln');
+                                }
+                                if (glglnLayer) {
+                                    glglnLayer.addTo(map);
+                                }
+                            } else {
+                                if (glglnLayer) {
+                                    map.removeLayer(glglnLayer);
+                                }
+                            }
+                        } else if (layerValue === 'slpln') {
+                            if (isChecked) {
+                                if (!slplnLayer) {
+                                    slplnLayer = await loadGeoJSONLayer('slpln');
+                                }
+                                if (slplnLayer) {
+                                    slplnLayer.addTo(map);
+                                }
+                            } else {
+                                if (slplnLayer) {
+                                    map.removeLayer(slplnLayer);
+                                }
+                            }
+                        }
+                    }
+                    updateLegend();
+                });
             });
 
             // Add event listener for the button inside the popup
@@ -1063,7 +1388,6 @@
                             const waveImage = document.createElement('img');
                             waveImage.src = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png';
                             waveImage.alt = 'Visualisasi Data WAVE';
-                            waveImage.className = 'wave-image';
                             waveImageWrapper.appendChild(waveImage);
 
                             const slider = document.createElement('div');
@@ -1117,6 +1441,12 @@
                             } else if (layerName === 'slpln') {
                                 imageUrl = 'https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+SLP'; // Placeholder image for GLG
                                 headingText = 'Visualisasi Data SLP';
+                            } else if (layerName === 'garis-pantai-2016') {
+                                imageUrl = 'https://placehold.co/800x600/0000FF/FFFFFF?text=Visualisasi+Garis+Pantai+2016';
+                                headingText = 'Visualisasi Garis Pantai 2016';
+                            } else if (layerName === 'garis-pantai-2017') {
+                                imageUrl = 'https://placehold.co/800x600/FF0000/FFFFFF?text=Visualisasi+Garis+Pantai+2017';
+                                headingText = 'Visualisasi Garis Pantai 2017';
                             }
 
                             const title = document.createElement('h4');
@@ -1274,7 +1604,6 @@
                                     errorMessage = "Terjadi kesalahan yang tidak diketahui.";
                                     break;
                             }
-                            console.log(`Geolocation Error: ${errorMessage}`);
                             alert(`Gagal mendapatkan lokasi Anda.\nError: ${errorMessage}`);
                         }
                     );
@@ -1287,17 +1616,20 @@
             transparencySlider.addEventListener('input', (e) => {
                 const opacity = e.target.value / 100;
 
-                // Prioritaskan layer WAVE jika ada
-                if (waveLayer && map.hasLayer(waveLayer)) {
-                    waveLayer.setStyle({ opacity: opacity });
-                } else if (slrlnLayer && map.hasLayer(slrlnLayer)) {
-                    slrlnLayer.setStyle({ opacity: opacity });
-                }
-                else if (glglnLayer && map.hasLayer(glglnLayer)) {
-                    glglnLayer.setStyle({ opacity: opacity });
-                }
-                else if (slplnLayer && map.hasLayer(slplnLayer)) {
-                    slplnLayer.setStyle({ opacity: opacity });
+                // Urutkan layer berdasarkan prioritas
+                const layers = [
+                    { layer: waveLayer, hasLayer: waveLayer && map.hasLayer(waveLayer) },
+                    { layer: slrlnLayer, hasLayer: slrlnLayer && map.hasLayer(slrlnLayer) },
+                    { layer: glglnLayer, hasLayer: glglnLayer && map.hasLayer(glglnLayer) },
+                    { layer: slplnLayer, hasLayer: slplnLayer && map.hasLayer(slplnLayer) },
+                    { layer: garisPantai2017Layer, hasLayer: garisPantai2017Layer && map.hasLayer(garisPantai2017Layer) },
+                    { layer: garisPantai2016Layer, hasLayer: garisPantai2016Layer && map.hasLayer(garisPantai2016Layer) }
+                ];
+
+                // Cek layer pertama yang sudah ada di peta dan terapkan opasitas
+                const topLayer = layers.find(l => l.hasLayer);
+                if (topLayer) {
+                    topLayer.layer.setStyle({ opacity: opacity });
                 }
             });
 
@@ -1356,9 +1688,13 @@
                         } else if (layerName === 'waveln') {
                             geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/WAVELN.geojson';
                         } else if (layerName === 'glgln') {
-                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/VARLN/GLGLN.geojson';
+                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/GLGLN.geojson';
                         } else if (layerName === 'slpln') {
-                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/VARLN/SLPLN.geojson';
+                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/VARLN/SLPLN.geojson';
+                        } else if (layerName === 'garis-pantai-2016') {
+                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20160309.geojson';
+                        } else if (layerName === 'garis-pantai-2017') {
+                            geojsonUrl = 'https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20170821.geojson';
                         }
 
                         try {
@@ -1377,7 +1713,17 @@
                     if (data && data.features && data.features.length > 0) {
                         const features = data.features;
                         const properties = features[0].properties;
-                        const headers = Object.keys(properties);
+
+                        // Tentukan header berdasarkan data yang ada
+                        let headers = Object.keys(properties);
+                        // Mengubah nama header untuk Garis Pantai
+                        if (layerName === 'garis-pantai-2016' || layerName === 'garis-pantai-2017') {
+                            headers = headers.map(header => {
+                                if (header.toUpperCase() === 'KEC') return 'Kecamatan';
+                                if (header.toUpperCase() === 'DESA') return 'Desa';
+                                return header; // Biarkan properti lainnya apa adanya
+                            });
+                        }
 
                         let tableHTML = '<table><thead><tr>';
                         headers.forEach(header => {
@@ -1387,8 +1733,16 @@
 
                         features.forEach(feature => {
                             tableHTML += '<tr>';
+                            const currentProps = feature.properties;
+                            // Iterasi menggunakan header yang sudah ditentukan
                             headers.forEach(header => {
-                                tableHTML += `<td>${feature.properties[header]}</td>`;
+                                // Cari key asli dari header yang sudah diubah namanya
+                                let originalKey = Object.keys(currentProps).find(key => {
+                                    if (key.toUpperCase() === 'KEC' && header === 'Kecamatan') return true;
+                                    if (key.toUpperCase() === 'DESA' && header === 'Desa') return true;
+                                    return key === header;
+                                });
+                                tableHTML += `<td>${currentProps[originalKey] || ''}</td>`;
                             });
                             tableHTML += '</tr>';
                         });
