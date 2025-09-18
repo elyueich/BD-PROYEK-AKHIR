@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cviFilter = document.getElementById("cvi-filter");
   const layerCheckboxes = document.querySelectorAll('input[name="overlay"]');
   const resetButton = document.getElementById("reset-filter-btn");
+  const informasiText = document.getElementById("informasi-text");
 
   // VARIABEL PENGHUBUNG UNTUK TAB VISUALISASI GAMBAR, GRAFIK, DSB
   const visualisasiTabContainer = document.getElementById(
@@ -47,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   //// MENAMPILKAN PETA LEAFLET PADA DIV ID MAP ////
   var map = L.map("map").setView([-8.65, 115.15], 11);
+
+  // Add a scale control to the map
+  // L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
+  // Add a scale control to the map
+  L.control.scale({ imperial: false, position: "topright" }).addTo(map);
 
   // MENENTUKAN BASEMAP YANG AKAN DISEDIAKAN PADA PETA
   var esriGrayCanvas = L.tileLayer.provider("Esri.WorldGrayCanvas");
@@ -74,6 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let gmrflnLayer = null;
   let intrsctLayer = null;
   let bslnLayer = null;
+  let scteprLayer = null;
+  let sctnsmLayer = null;
   let sctlrrLayer = null;
   let scarLayer = null;
   let cvilnLayer = null;
@@ -97,6 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
     gmrfln: null,
     intrsct: null,
     bsln: null,
+    sctnsm: null,
+    sctepr: null,
     sctlrr: null,
     scar: null,
     cviln: null,
@@ -307,6 +317,10 @@ document.addEventListener("DOMContentLoaded", () => {
         intrsctLayer = isChecked ? geojsonLayers[layerValue] : null;
       if (layerValue === "bsln")
         bslnLayer = isChecked ? geojsonLayers[layerValue] : null;
+      if (layerValue === "sctepr")
+        scteprLayer = isChecked ? geojsonLayers[layerValue] : null;
+      if (layerValue === "sctnsm")
+        sctnsmLayer = isChecked ? geojsonLayers[layerValue] : null;
       if (layerValue === "sctlrr")
         sctlrrLayer = isChecked ? geojsonLayers[layerValue] : null;
       if (layerValue === "scar")
@@ -431,6 +445,14 @@ document.addEventListener("DOMContentLoaded", () => {
       geojsonUrl =
         "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/Baseline.geojson";
       styleFunction = stylebslnLayer;
+    } else if (layerName === "sctepr") {
+      geojsonUrl =
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
+      styleFunction = styleeprLayer;
+    } else if (layerName === "sctnsm") {
+      geojsonUrl =
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
+      styleFunction = stylensmLayer;
     } else if (layerName === "sctlrr") {
       geojsonUrl =
         "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
@@ -460,8 +482,23 @@ document.addEventListener("DOMContentLoaded", () => {
             popupContent += `<tr><td><b>${key}</b></td><td>: ${feature.properties[key]}</td></tr>`;
           }
         }
-        /// Posisi tombol visualisasi
-        popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Visualisasi</button>`;
+
+        // Kondisi untuk menampilkan tombol hanya pada layer tertentu
+        if (layerName === "slrln" || layerName === "waveln") {
+          popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Visualisasi</button>`;
+        } else if (layerName === "cviln") {
+          popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Informasi</button>`;
+        } else if (layerName === "scar") {
+          popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Grafik</button>`;
+        } else if (
+          layerName === "sctlrr" ||
+          layerName === "sctepr" ||
+          layerName === "sctnsm"
+        ) {
+          popupContent += `</table><button class="show-epr-btn" data-layer-name="${layerName}">EPR</button><button class="show-nsm-btn" data-layer-name="${layerName}">NSM</button><button class="show-lrr-btn" data-layer-name="${layerName}">LRR</button>`;
+        } else {
+          popupContent += `</table>`;
+        }
         layer.bindPopup(popupContent);
       }
     };
@@ -590,6 +627,86 @@ document.addEventListener("DOMContentLoaded", () => {
       color = "#ffff00"; // Kuning
     } else if (lrr >= -2 && lrr < -1) {
       color = "#ff9900"; // Oranye
+    }
+
+    return {
+      //Kalau menu skor di atur, maka nilai yang tidak pilih akan diberi warna transparant
+      color: isVisible ? color : "transparent",
+      weight: isVisible ? 2 : 0,
+      opacity: isVisible ? 1 : 0,
+    };
+  }
+
+  function styleeprLayer(feature) {
+    const selectedKecamatan = kecamatanFilter.value.toLowerCase();
+    const selectedDesa = desaFilter.value.toLowerCase();
+
+    const featureKec = (feature.properties.Kec || "").toLowerCase();
+    const featureDesa = (feature.properties.Desa || "").toLowerCase();
+
+    let isVisible = true;
+
+    // LOGIKA FILTER ADMINISTRASI
+    if (selectedKecamatan && featureKec !== selectedKecamatan) {
+      isVisible = false;
+    }
+    if (selectedDesa && featureDesa !== selectedDesa) {
+      isVisible = false;
+    }
+
+    // Sisa dari fungsi styleFunction tetap sama...
+    const epr = feature.properties.EPR;
+    let color = "#ff0000"; // Default color (Sangat Tinggi)
+
+    if (epr > 2) {
+      color = "#008000"; // Hijau Tua
+    } else if (epr > 1 && epr <= 2) {
+      color = "#00ff00"; // Kuning
+    } else if (epr >= -1 && epr <= 1) {
+      color = "#ffff00"; // Kuning
+    } else if (epr >= -2 && epr < -1) {
+      color = "#ff9900"; // Oranye
+    }
+
+    return {
+      //Kalau menu skor di atur, maka nilai yang tidak pilih akan diberi warna transparant
+      color: isVisible ? color : "transparent",
+      weight: isVisible ? 2 : 0,
+      opacity: isVisible ? 1 : 0,
+    };
+  }
+
+    function stylensmLayer(feature) {
+    const selectedKecamatan = kecamatanFilter.value.toLowerCase();
+    const selectedDesa = desaFilter.value.toLowerCase();
+
+    const featureKec = (feature.properties.Kec || "").toLowerCase();
+    const featureDesa = (feature.properties.Desa || "").toLowerCase();
+
+    let isVisible = true;
+
+    // LOGIKA FILTER ADMINISTRASI
+    if (selectedKecamatan && featureKec !== selectedKecamatan) {
+      isVisible = false;
+    }
+    if (selectedDesa && featureDesa !== selectedDesa) {
+      isVisible = false;
+    }
+
+    // Sisa dari fungsi styleFunction tetap sama...
+    const nsm = feature.properties.NSM;
+    // let color = "#ff0000"; // Default color (Sangat Tinggi)
+
+    if (nsm > 55) {
+      color = "#008000"; // Hijau Tua
+    } else if (nsm > 15 && nsm <= 55) {
+      color = "#00ff00"; // Kuning
+    } else if (nsm >= 15 && nsm <= 0.01) {
+      color = "#ffff00"; // Kuning
+    } else if (nsm >= -15 && nsm <= 0) {
+      color = "#ff9900"; // Oranye
+    } else if (nsm < -15) {
+      color = "#ff0000"; // Oranye
     }
 
     return {
@@ -1162,7 +1279,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     /// Group Perubahan
     if (sctlrrLayer) {
-      sctlrrLayer.setStyle(styleVARKERLayer);
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
     }
     if (scarLayer) {
       scarLayer.setStyle(styleSCARLayer);
@@ -1245,7 +1368,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     /// Group Perubahan
     if (sctlrrLayer) {
-      sctlrrLayer.setStyle(styleVARKERLayer);
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
     }
     if (scarLayer) {
       scarLayer.setStyle(styleSCARLayer);
@@ -1482,10 +1611,16 @@ document.addEventListener("DOMContentLoaded", () => {
         styleGarisPantai(feature, 2024)
       );
     }
-    // /// Group Perubahan
-    // if (sctlrrLayer) {
-    //   sctlrrLayer.setStyle(styleVARKERLayer);
-    // }
+    /// Group Perubahan
+    if (sctlrrLayer) {
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
+    }
     if (scarLayer) {
       scarLayer.setStyle(styleSCARLayer);
     }
@@ -1996,16 +2131,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Tambahkan event listener untuk tombol di dalam popup
   map.on("popupopen", function () {
+    const nsm = document.querySelector(".show-nsm-btn");
+    if (nsm) {
+      nsm.addEventListener("click", () => {
+        const layerName = nsm.getAttribute("data-layer-name");
+        if (layerName === "sctlrr") {
+          // Buka menu Informasi dan tandai sebagai aktif
+          menuDivs.forEach((div) => div.classList.remove("show"));
+          menuItems.forEach((item) => item.classList.remove("active"));
+          const infoMenu = document.getElementById("informasi-menu");
+          const infoMenuItem = document.querySelector(
+            '.sidemenu-item[data-target="informasi-menu"]'
+          );
+          infoMenu.classList.add("show");
+          infoMenuItem.classList.add("active");
+          mainContent.classList.add("pushed-by-sidemenu");
+          sideMenu.classList.add("show-sidemenu");
+          menuToggleIcon.classList.remove("fa-bars");
+          menuToggleIcon.classList.add("fa-arrow-left");
+          // Tampilkan teks informasi untuk SLR
+          informasiText.innerHTML = `
+          <h4>Net Shoreline Movement</h4>
+          <p><strong>Net Shoreline Movement (NSM)</strong> 
+          pengukuran perubahan posisi garis pantai antara dua waktu yang berbeda. 
+          Secara sederhana, ini adalah jarak total seberapa jauh sebuah pantai telah maju (akresi) 
+          atau mundur (abrasi) dalam periode tertentu.</p>
+          <ol>
+          <li><strong>Abrasi:</strong> Pengikisan daratan oleh gelombang dan arus, yang menyebabkan 
+          garis pantai<strong> mundur</strong>.</li>
+          <li><strong>Akresi:</strong> Penumpukan sedimen (pasir/lumpur) yang dibawa oleh arus atau 
+          sungai, yang menyebabkan garis pantai<strong> maju</strong>ke arah laut.</li>
+          </ol>
+          <p> NSM memberitahu kita proses mana yang lebih dominan. Jika nilai NSM negatif, berarti 
+          abrasi lebih besar dan pantai tersebut terkikis. Jika nilainya positif, berarti akresi 
+          lebih dominan dan pantai tersebut bertambah luas.</p>`;
+          visualisasiContainer.style.display = "none";
+          informasiText.style.display = "block";
+        }
+        // Open the tab and render the first item
+        visualisasiTabContainer.style.display = "flex";
+        currentVisualisasiIndex = 0;
+        renderVisualisasi();
+      });
+    }
+
+    const epr = document.querySelector(".show-epr-btn");
+    if (epr) {
+      epr.addEventListener("click", () => {
+        const layerName = epr.getAttribute("data-layer-name");
+        if (layerName === "sctlrr") {
+          // Buka menu Informasi dan tandai sebagai aktif
+          menuDivs.forEach((div) => div.classList.remove("show"));
+          menuItems.forEach((item) => item.classList.remove("active"));
+          const infoMenu = document.getElementById("informasi-menu");
+          const infoMenuItem = document.querySelector(
+            '.sidemenu-item[data-target="informasi-menu"]'
+          );
+          infoMenu.classList.add("show");
+          infoMenuItem.classList.add("active");
+          mainContent.classList.add("pushed-by-sidemenu");
+          sideMenu.classList.add("show-sidemenu");
+          menuToggleIcon.classList.remove("fa-bars");
+          menuToggleIcon.classList.add("fa-arrow-left");
+          // Tampilkan teks informasi untuk SLR
+          informasiText.innerHTML = `
+          <h4>End Point Rate</h4>
+          <p><strong>End Point Rate (EPR)</strong> 
+          adalah tingkat kecepatan perubahan garis pantai 
+          yang dinyatakan dalam satuan jarak per tahun (misalnya, meter/tahun).
+          Oleh karena itu, nilai EPR dapat menjawab pertanyaan "Seberapa cepat 
+          pantai itu bergeser setiap tahunnya?".</p>`;
+          visualisasiContainer.style.display = "none";
+          informasiText.style.display = "block";
+        }
+        // Open the tab and render the first item
+        visualisasiTabContainer.style.display = "flex";
+        currentVisualisasiIndex = 0;
+        renderVisualisasi();
+      });
+    }
+
+    const lrr = document.querySelector(".show-lrr-btn");
+    if (lrr) {
+      lrr.addEventListener("click", () => {
+        const layerName = lrr.getAttribute("data-layer-name");
+        if (layerName === "sctlrr") {
+          // Buka menu Informasi dan tandai sebagai aktif
+          menuDivs.forEach((div) => div.classList.remove("show"));
+          menuItems.forEach((item) => item.classList.remove("active"));
+          const infoMenu = document.getElementById("informasi-menu");
+          const infoMenuItem = document.querySelector(
+            '.sidemenu-item[data-target="informasi-menu"]'
+          );
+          infoMenu.classList.add("show");
+          infoMenuItem.classList.add("active");
+          mainContent.classList.add("pushed-by-sidemenu");
+          sideMenu.classList.add("show-sidemenu");
+          menuToggleIcon.classList.remove("fa-bars");
+          menuToggleIcon.classList.add("fa-arrow-left");
+          // Tampilkan teks informasi untuk SLR
+          informasiText.innerHTML = `
+          <h4>Linear Regression Rate</h4>
+          <p><strong>Linear Regression Rate (LRR)</strong> 
+          LRR (Linear Regression Rate)
+          LRR adalah tingkat perubahan garis pantai yang dihitung menggunakan metode statistik 
+          yang disebut regresi linier. Metode ini menganalisis beberapa posisi garis pantai dari 
+          waktu ke waktu (misalnya, dari tahun 1980, 1990, 2000, 2010, dan 2020) untuk menemukan 
+          garis tren atau "garis paling cocok" (line of best fit) yang mewakili pergerakan pantai 
+          secara keseluruhan.</p>
+          <p>Sederhananya, jika Anda memiliki banyak titik data posisi pantai, LRR akan menarik satu
+           garis lurus yang paling mendekati semua titik tersebut. Kemiringan (slope) dari garis 
+           lurus inilah yang menjadi nilai LRR, yang menunjukkan kecepatan rata-rata perubahan 
+           pantai per tahun.</p>
+          <ol>
+          <p><strong>Perbedaan Utama EPR dan LRR</strong></p> 
+          <li><strong>EPR:</strong> hanya melihat <strong>dua titik data</strong>: titik awal dan titik akhir. 
+          Ini seperti hanya melihat di mana perjalanan Anda dimulai dan di mana berakhir, 
+          tanpa peduli rute di antaranya</li>
+          <li><strong>LRR:</strong> melihat semua <strong>titik data yang tersedia</strong>. Ini memberikan gambaran 
+          yang jauh lebih andal dan stabil tentang tren jangka panjang, karena tidak terlalu 
+          terpengaruh oleh posisi pantai yang aneh atau tidak biasa di satu tahun tertentu 
+          (misalnya, akibat badai sesaat).</li>
+          </ol>`;
+          visualisasiContainer.style.display = "none";
+          informasiText.style.display = "block";
+        }
+        // Open the tab and render the first item
+        visualisasiTabContainer.style.display = "flex";
+        currentVisualisasiIndex = 0;
+        renderVisualisasi();
+      });
+    }
+    //// BUTTON KHUSUS DSAS
+
+    ///// BUTTON UMUM
     const btn = document.querySelector(".show-image-btn");
     if (btn) {
       btn.addEventListener("click", () => {
         const slrCheckbox = document.querySelector('input[value="slrln"]');
         const waveCheckbox = document.querySelector('input[value="waveln"]');
-        const glglnCheckbox = document.querySelector('input[value="glgln"]');
-        const slplnCheckbox = document.querySelector('input[value="slpln"]');
-        const gmrflnCheckbox = document.querySelector('input[value="gmrfln"]');
-        const pslnCheckbox = document.querySelector('input[value="psln"]');
-        const sclnCheckbox = document.querySelector('input[value="scln"]');
+        const scarCheckbox = document.querySelector('input[value="scar"]');
 
         // Clear the visualization items and populate based on checkboxes
         visualisasiItems = [];
@@ -2024,57 +2289,29 @@ document.addEventListener("DOMContentLoaded", () => {
             url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png",
           });
         }
-        if (glglnCheckbox.checked) {
+        if (scarCheckbox.checked) {
           visualisasiItems.push({
             type: "image",
-            title: "Visualisasi Data GLG",
-            url: "https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+GLG",
-          });
-        }
-        if (slplnCheckbox.checked) {
-          visualisasiItems.push({
-            type: "image",
-            title: "Visualisasi Data SLP",
-            url: "https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+SLP",
-          });
-        }
-        if (gmrflnCheckbox.checked) {
-          visualisasiItems.push({
-            type: "image",
-            title: "Visualisasi Data SLR",
-            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png",
-          });
-        }
-        if (pslnCheckbox.checked) {
-          visualisasiItems.push({
-            type: "image",
-            title: "Visualisasi Data WAVE",
-            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png",
-          });
-        }
-        if (sclnCheckbox.checked) {
-          visualisasiItems.push({
-            type: "image",
-            title: "Visualisasi Data GLG",
-            url: "https://placehold.co/800x600/800080/FFFFFF?text=Visualisasi+GLG",
+            title: "Visualisasi Data Area Perubahan",
+            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/data/GAMBAR/Grafik%20perubahan%20luas%20area.png",
           });
         }
 
-        // Handle image comparison if both SLR and WAVE are selected
-        if (slrCheckbox.checked && waveCheckbox.checked) {
-          visualisasiItems.push({
-            type: "image-comparison",
-            title: "Perbandingan Visualisasi SLR dan WAVE",
-            image1: {
-              url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png",
-              alt: "Visualisasi Data SLR",
-            },
-            image2: {
-              url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png",
-              alt: "Visualisasi Data WAVE",
-            },
-          });
-        }
+        // // Handle image comparison if both SLR and WAVE are selected
+        // if (slrCheckbox.checked && waveCheckbox.checked) {
+        //   visualisasiItems.push({
+        //     type: "image-comparison",
+        //     title: "Perbandingan Visualisasi SLR dan WAVE",
+        //     image1: {
+        //       url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png",
+        //       alt: "Visualisasi Data SLR",
+        //     },
+        //     image2: {
+        //       url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png",
+        //       alt: "Visualisasi Data WAVE",
+        //     },
+        //   });
+        // }
 
         // Open the tab and render the first item
         visualisasiTabContainer.style.display = "flex";
