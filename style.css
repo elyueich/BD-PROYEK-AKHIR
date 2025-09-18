@@ -89,6 +89,17 @@ body {
     transition: background-color 0.3s;
 }
 
+.menu-paling-bawah {
+    margin-top: auto;
+}
+
+.grup-bawah {
+    margin-top: auto;
+    /* Kuncinya tetap sama, tapi diterapkan pada grup */
+    width: 100%;
+    /* Pastikan grup ini mengambil lebar penuh container */
+}
+
 .sidemenu-item:hover {
     background-color: #6e7280;
 }
@@ -264,6 +275,15 @@ body {
     width: 100%;
 }
 
+/* Tambahkan CSS untuk memastikan kontrol skala terlihat */
+.leaflet-control-scale {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1000;
+    /* Nilai z-index yang lebih tinggi */
+}
+
 .show-image-btn {
     background-color: #4CAF50;
     border: none;
@@ -279,6 +299,57 @@ body {
 }
 
 .show-image-btn:hover {
+    background-color: #45a049;
+}
+.show-nsm-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.show-nsm-btn:hover {
+    background-color: #45a049;
+}
+.show-epr-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.show-epr-btn:hover {
+    background-color: #45a049;
+}
+.show-lrr-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.show-lrr-btn:hover {
     background-color: #45a049;
 }
 
