@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Web dengan Tab Visualisasi dan Kontrol Lengkap</title>
+    <title>Peta Interaktif Perubahan Garis Pantai dan Kerentanan Pesisir Kab. Badung</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha2d3996/gLd9Oq/m0tN9d61j632w5f5o0j2G8/9e1/e0p9d74f/j07d93d399639d61j6" crossorigin="" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-spin@1.1.0/leaflet.spin.css" />
-    <link rel="stylesheet" href="https://elyueich.github.io/BD-PROYEK-AKHIR/style.css">
+    <!-- <link rel="stylesheet" href="https://elyueich.github.io/leaflet-dashboard/style.css" /> -->
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -19,7 +20,7 @@
             <i class="fas fa-bars" id="menu-toggle"></i>
         </div>
         <div class="top-bar-right">
-            <span class="top-bar-title">Visualisasi Data</span>
+            <span class="top-bar-title">Peta Interaktif Perubahan Garis Pantai dan Kerentanan Pesisir Kab. Badung</span>
             <div>
                 <button id="geolocation-btn" class="geolocation-button">
                     <i class="fas fa-location-dot"></i>
@@ -52,11 +53,20 @@
             <i class="fas fa-info-circle"></i>
             <span>Informasi</span>
         </div>
-        <div class="sidemenu-item" data-target="tabel-menu">
-            <i class="fas fa-table"></i>
-            <span>Tabel</span>
+        <div class="grup-bawah">
+            <div class="sidemenu-item" data-target="tabel-menu">
+                <i class="fas fa-table"></i>
+                <span>Tabel</span>
+            </div>
+            <div class="sidemenu-item" data-target="about-menu">
+                <i class="fas fa-book-open"></i>
+                <span>about</span>
+            </div>
         </div>
+
     </div>
+
+
 
     <!-- Div for each menu -->
     <div id="layer-menu" class="menu-div">
@@ -173,7 +183,19 @@
                     </div> -->
                     <div class="layer-item">
                         <label>
-                            <input type="checkbox" name="overlay" value="sctlrr"> Transek LRR
+                            <input type="checkbox" name="overlay" value="sctnsm"> Perubahan DSAS (NSM)
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="sctnsm"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="sctepr"> Perubahan DSAS (EPR)
+                        </label>
+                        <i class="fas fa-table table-icon" data-layer="sctepr"></i>
+                    </div>
+                    <div class="layer-item">
+                        <label>
+                            <input type="checkbox" name="overlay" value="sctlrr"> Perubahan DSAS (LRR)
                         </label>
                         <i class="fas fa-table table-icon" data-layer="sctlrr"></i>
                     </div>
@@ -338,7 +360,9 @@
             <button class="close-button" data-target-close="informasi-menu">&times;</button>
         </div>
         <div class="menu-content">
-            <p>Klik ikon tabel pada menu "Layer" untuk menampilkan data di sini.</p>
+            <div id="informasi-text">
+                <p>Klik pada garis di peta dan kemudian tombol di pop-up untuk menampilkan informasi di sini.</p>
+            </div>
         </div>
     </div>
 
@@ -351,6 +375,20 @@
         <div class="menu-content" id="table-content">
             <p style="text-align: center; color: #777;">Klik ikon tabel pada menu "Layer" untuk menampilkan data di
                 sini.</p>
+        </div>
+    </div>
+
+    <div id="about-menu" class="menu-div">
+        <div class="menu-top">
+            <h3>Tentang Aplikasi</h3>
+            <button class="close-button" data-target-close="about-menu">&times;</button>
+        </div>
+        <div class="menu-content">
+            <h4 style="text-align: center; font-weight: bold;">Peubahan Garis Pantai dan Kerentanan Fisik Pesisir Kabupaten Badung</h4>
+            <p>Aplikasi ini dibuat untuk menampilkan data geografis hasil penelitian proyek akhir yang berkaitan dengan 
+                perubahan garis pantai di Kabupaten Badung periode 2016 s.d. 2024 dan kerentanan fisik wilayah pesisir Kabupaten Badung.
+                Aplikasi ini terdiri atas fitur untuk mengganti basemap, mengaktifkan/menonaktifkan layer GeoJSON, menampilkan visualisasi data yang
+                terkait, filter data, dan slider data.</p>
         </div>
     </div>
 
@@ -383,8 +421,8 @@
     <!-- Leaflet Spin for loading indicator -->
     <script src="https://cdn.jsdelivr.net/npm/spin.js@2.3.2/spin.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-spin@1.1.0/leaflet.spin.min.js"></script>
-    <<script src="https://elyueich.github.io/BD-PROYEK-AKHIR/control.js"></script>
+    <!-- <script src="https://elyueich.github.io/leaflet-dashboard/control.js"></script> -->
+    <script src="javascript05.js"></script>
 </body>
 
 </html>
-
