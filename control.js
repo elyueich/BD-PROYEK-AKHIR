@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const nextBtn = document.getElementById("next-btn");
 
   //// MENAMPILKAN PETA LEAFLET PADA DIV ID MAP ////
-  var map = L.map("map").setView([-8.65, 115.15], 11);
+  var map = L.map("map").setView([-8.757785434451973, 115.17332621162974], 12);
 
   // Add a scale control to the map
   // L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
@@ -894,6 +894,48 @@ document.addEventListener("DOMContentLoaded", () => {
     /// Keterangan Garis Pantai Berakhir di Sini ///
 
     //// Keterangan untuk Group Peubahan ////
+    if (sctnsmLayer && map.hasLayer(sctnsmLayer)) {
+      const sctnsmData = [
+        { color: "#008000", text: "> 55 m" },
+        { color: "#00ff00", text: "15.01-55 m" },
+        { color: "#ffff00", text: "15-0.01 m" },
+        { color: "#ff9900", text: "0- (-15) m" },
+        { color: "#ff0000", text: "< -15 m" },
+      ];
+      perubahanLegends.push({
+        type: "multiple",
+        title: "Jarak Perubahan Garis Pantai (NSM)",
+        data: sctnsmData,
+      });
+    }
+    if (scteprLayer && map.hasLayer(scteprLayer)) {
+      const scteprData = [
+        { color: "#008000", text: "> 5 m/tahun" },
+        { color: "#00ff00", text: "2.01 - 5 m/tahun" },
+        { color: "#ffff00", text: "2 - 0.01 m/tahun" },
+        { color: "#ff9900", text: "0 - (-2) m/tahun" },
+        { color: "#ff0000", text: "< -2.01 m/tahun" },
+      ];
+      perubahanLegends.push({
+        type: "multiple",
+        title: "Laju Perubahan Garis Pantai (EPR)",
+        data: scteprData,
+      });
+    }
+    if (sctlrrLayer && map.hasLayer(sctlrrLayer)) {
+      const sctlrrData = [
+        { color: "#008000", text: "> 5 m/tahun" },
+        { color: "#00ff00", text: "2.01 - 5 m/tahun" },
+        { color: "#ffff00", text: "2 - 0.01 m/tahun" },
+        { color: "#ff9900", text: "0 - (-2) m/tahun" },
+        { color: "#ff0000", text: "< -2.01 m/tahun" },
+      ];
+      perubahanLegends.push({
+        type: "multiple",
+        title: "Laju Perubahan Garis Pantai (LRR)",
+        data: sctlrrData,
+      });
+    }
     if (scarLayer && map.hasLayer(scarLayer)) {
       const scarData = [
         { color: "#ff0000", text: "Abrasi" },
@@ -906,7 +948,7 @@ document.addEventListener("DOMContentLoaded", () => {
         data: scarData,
       });
     }
-    //// Keterangan untuk Group Peubahan ////
+    //// Keterangan untuk Group Perubahan ////
 
     //// Keterangan untuk Group Kerentanan ////
     if (slplnLayer && map.hasLayer(slplnLayer)) {
@@ -2296,22 +2338,6 @@ document.addEventListener("DOMContentLoaded", () => {
             url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/data/GAMBAR/Grafik%20perubahan%20luas%20area.png",
           });
         }
-
-        // // Handle image comparison if both SLR and WAVE are selected
-        // if (slrCheckbox.checked && waveCheckbox.checked) {
-        //   visualisasiItems.push({
-        //     type: "image-comparison",
-        //     title: "Perbandingan Visualisasi SLR dan WAVE",
-        //     image1: {
-        //       url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Trend%20SLR%20INT10.png",
-        //       alt: "Visualisasi Data SLR",
-        //     },
-        //     image2: {
-        //       url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/Visualisasi%20Mean%20Wave%20INT10.png",
-        //       alt: "Visualisasi Data WAVE",
-        //     },
-        //   });
-        // }
 
         // Open the tab and render the first item
         visualisasiTabContainer.style.display = "flex";
