@@ -19,7 +19,7 @@
             <i class="fas fa-bars" id="menu-toggle"></i>
         </div>
         <div class="top-bar-right">
-            <span class="top-bar-title">Peta Interaktif Perubahan Garis Pantai dan Kerentanan Pesisir Kab. Badung</span>
+            <span class="top-bar-title">Peta Interaktif Perubahan Garis Pantai dan Kerentanan Pesisir Badung</span>
             <div>
                 <button id="geolocation-btn" class="geolocation-button">
                     <i class="fas fa-location-dot"></i>
@@ -372,7 +372,8 @@
             <button class="close-button" data-target-close="tabel-menu">&times;</button>
         </div>
         <div class="menu-content" id="table-content">
-            <p style="text-align: center; color: #777;">Klik ikon tabel pada menu "Layer" untuk menampilkan data di
+            <p style="text-align: center; color: #777; font-size: 12px;">Klik ikon tabel pada menu "Layer" untuk
+                menampilkan data di
                 sini.</p>
         </div>
     </div>
@@ -383,12 +384,233 @@
             <button class="close-button" data-target-close="about-menu">&times;</button>
         </div>
         <div class="menu-content">
-            <h4 style="text-align: center; font-weight: bold;">Peubahan Garis Pantai dan Kerentanan Fisik Pesisir Kabupaten Badung</h4>
-            <p>Aplikasi ini dibuat untuk menampilkan data geografis hasil penelitian proyek akhir yang berkaitan dengan 
-                perubahan garis pantai di Kabupaten Badung periode 2016 s.d. 2024 dan kerentanan fisik wilayah pesisir Kabupaten Badung.
-                Aplikasi ini terdiri atas fitur untuk mengganti basemap, mengaktifkan/menonaktifkan layer GeoJSON, menampilkan visualisasi data yang
-                terkait, filter data, dan slider data.</p>
+            <h4 style="text-align: center; font-weight: bold; font-size: 14px; color: brown;">Perubahan Garis Pantai dan
+                Kerentanan Fisik Pesisir
+                Kabupaten Badung</h4>
+            <p style="font-size: 13px; text-align: justify;">Aplikasi ini dibuat untuk menampilkan peta interaktif
+                mengenai
+                perubahan garis pantai periode 2016 s.d. 2024 dan kerentanan fisik wilayah pesisir di Kabupaten Badung.
+                Tujuannya adalah menyajikan
+                sebaran spasial fenomena abrasi atau akresi yang terjadi selama 9 tahun terakhir, yaitu dari tahun 2016
+                s.d. 2024. Selain itu, disajikan
+                pula tingkat kerentanan pesirir Badung dengan mempertimbangkan faktor kemiringan lereng, geologi,
+                geomorfologi pesisir, tunggang pasang surut,
+                kenaikan muka air laut, perubahan garis pantai, dan rata-rata ketinggian gelombang. Proses data dalam
+                aplikasi ini mengombinasikan Google Earth Engine
+                dengan bahasa pemrograman JavaScript, Visual Studio Code dengan menggunakan bahasa pemrograman Python,
+                serta perangka lunak SIG berbasis Desktop.
+                Data yang digunakan mencakup data citra penginderaan jauh, dataset sekunder, dan informasi statistik.
+                Melalui metode overlay dan DSAS (NSM, EPR, dan LRR)
+                terhadap data multitemproal garis pantai memungkinkan pengguna dalam memahami pesisir Badung yang
+                mengalami abrasi ataupun akresi, secara signifikan ataupun tidak.
+                Selain itu, dengan menerapkan metode Coastal Vulnerability Index (CVI) memungkinkan pengguna dalam
+                memahami tingkat kerentanan daerah pesisir dalam menghadapi bahaya
+                pesisir, seperti bahaya penggenangan, banjir rob, kenaikan muka air laut, dan gelombang tinggi. <br>
+            </p>
+            <details>
+                <summary>Intruksi Penggunaan</summary>
+                <div class="checkbox-group dropdown-content">
+                    <p style="font-size: 13px;"><strong>Petunjuk Penggunaan Peta Interaktif</strong></p>
+                    <p style="text-align: justify; font-size: 13px;">Aplikasi ini terdiri atas fitur untuk mengganti
+                        basemap, mengaktifkan/menonaktifkan layer
+                        GeoJSON,
+                        menampilkan visualisasi data yang
+                        terkait, filter data, dan slider data.</p>
+                    <ol style="font-size: 13px; padding-left: 10px;">
+                        <li>Buka menu <strong>Layer</strong> untuk menampilkan pilihan basemap dan checkbox layer yang
+                            tersedia.</li>
+                        <li>Pilih checkbox layer untuk menampilkan data yang diperlukan.</li>
+                        <li>Gunakan fitur zoom in/out untuk memperbesar dan memperkecil tampilan peta sesuai kebutuhan.
+                        </li>
+                        <li>Klik layer data untuk menampilkan informasi atribut peta</li>
+                        <li>Klik ikon tabel pada daftar layer data untuk menampilkan atribut dalam bentuk tabel.</li>
+                        <li>Panel menu dapat dilebarkan dengan mengarahkan kursor ke sisi kanan panel hingga ikon
+                            berubah menjadi ikon panah, lalu dapat digeser ke kiri untuk dikecilkan dan kanan untuk
+                            dilebarkan</li>
+                        <li>Buka menu <strong>Legenda</strong> untuk menampilkan keterangan simbolisasi dari data yang
+                            sudah ditampilkan pada halaman peta.</li>
+                        <li>Buka menu <strong>Slider</strong> untuk mengatur tingkat transparansi data yang ditampilkan
+                            sehingga dapat dibandingkan dengan layer yang berada di bawahnya.
+                            Slider bekerja untuk layer terakhir yang ditampilkan berdasarkan pilihan checkbox pada menu
+                            <strong>Layer</strong>.
+                        </li>
+                        <li>Buka menu <strong>Filter</strong> untuk mengatur layer yang ditampilkan berdasarkan
+                            informasi kecamatan dan desa, nilai skor parameter, atau tingkat kerentanan pesisir.</li>
+                        <li>Klik button yang tersedia untuk menampilkan informasi, diagram, ataupun visualisasi dari
+                            layer data yang tertampil.</li>
+                    </ol>
+                </div>
+            </details>
+            <details>
+                <summary>Deskripsi Daerah Penelitian</summary>
+                <div class="checkbox-group dropdown-content">
+                    <p style="font-size: 13px;"><strong>Deskripsi Daerah Penelitian</strong></p>
+                    <p style="text-align: justify; font-size: 13px;">
+                        Kabupaten Badung merupakan daerah yang berada di selatan Pulau Bali,
+                        tepatnya di antara 8°14' hingga 8°50' Lintang Selatan serta 115°5' hingga 115°14'
+                        Bujur Timur. Berdasarkan Data Dalam Angka Tahun 2024, Kabupaten Badung tercatat
+                        memiliki wilayah seluas 418,52 km2. Secara administratif, Kabupaten Badung terdiri
+                        atas 6 kecamatan dan 62 desa. Tujuh belas (17) desa diantaranya berbatasan langsung
+                        dengan wilayah perairan laut dan menjadi lokasi utama pemetaan perubahan garis pantai
+                        dan kerentanan wilayah pesisir. Desa tersebut tersebar di 4 kecamatan, yaitu Kecamatan
+                        Mengwi, Kecamatan Kuta Utara, Kecamatan Kuta, dan Kecamatan Kuta Selatan.</p>
+                    <p style="text-align: justify; font-size: 13px;">
+                        Berdasarkan aspek fisiknya, pesisir Kabupaten Badung dapat diklasifikasikan menjadi
+                        beberapa tipologi. Yakni, pesisir berpasir, pesisir berlumpur, pesisir dengan tombolo,
+                        pesisir bertebing, pesisir breksi vulkanik, pesisir berdelta, pesisir mangrove, pesisir
+                        berpenghalang, dan pesisir reklamasi. Selain itu, apabila ditinjau dari aspek biologinya,
+                        pesisir di Kabupaten Badung terbagi atas pesisir dengan eksosistem terumbu karang,
+                        ekosistem hutan, ekosistem mangrove, dan ekosistem padang rumput.</p>
+                    <p style="text-align: justify; font-size: 13px;">
+                        Pantai berpasir dengan topografi datar dan pesisir bertebing dengan topografi sangat
+                        curam merupakan dua jenis tipologi geomorfologi yang mendominasi pesisir Kabupaten Badung.
+                        Pantai berpasir mendominasi di sebelah barat Kabupaten Badung yang mencakup Kecamatan Mengwi,
+                        Kuta Utara, dan Kuta, serta sebelah timur Kecamatan Kuta Selatan. Adapun Pantai bertebing
+                        mendominasi di sebagian besar wilayah Kecamatan Kuta Selatan.</p>
+
+                    <p style="font-size: 13px;" href="https://elyueich.github.io/BD-PROYEK-AKHIR/"> Peta Batas
+                        Administrasi Daerah Penelitian </p>
+                </div>
+            </details>
+
+            <details>
+                <summary>Informasi Pengolahan Data</summary>
+                <div class="checkbox-group dropdown-content">
+                    <p style="font-size: 13px;"><strong>Data yang digunakan:</strong></p>
+                    <ol style="font-size: 13px; padding-left: 10px;">
+                        <li>Data citra sentinel-2 level 1C tahun 2016-2018</li>
+                        <li>Data citra sentinel-2 level 2A tahun 2019-2024</li>
+                        <li>Data shapefile Batas Administrasi Kabupaten Badung</li>
+                        <li>Data Pasang Surut per Jam pada tahun 2024</li>
+                        <li>Data Sea Level Anomaly Bulanan periode 1993-2024</li>
+                        <li>Data Ketinggian Gelombang Bulanan periode 1993-2023</li>
+                        <li>Forest and Buildings removed Copernicus DEM (FABDEM)</li>
+                        <li>Data Curah Hujan Climate Hazards Group Infrared Precipitation with Station Data (CHRIPS)
+                            periode 2016-2024</li>
+                        <li>Data Geologi tahun 2010</li>
+                    </ol>
+
+                    <p style="font-size: 13px;"><strong>Metode yang digunakan:</strong></p>
+                    <ol style="font-size: 13px; padding-left: 10px;">
+                        <li>Garis pantai diperoleh melalui transformasi MNDWI dan threshold untuk memisahkan daratan dan
+                            perairan,
+                            serta interpretasi visual menggunakan komposit true color dan SWIR untuk menghasilkan garis
+                            pantai yang lebih akurat secara visual.</li>
+                        <li>Perubahan area garis pantai diperoleh melalui metode overlay area pesisir badung berdasarkan
+                            batas garis pantai tahun 2016 dan 2024.</li>
+                        <li>Perubahan jarak dan laju garis pantai diperoleh dengan menggunakan Digital Shoreline
+                            Analysis System (DSAS) dengan algoritma Net Shoreline Movement (NSM),
+                            End Point Rate (EPR), dan Linear Regression Rate (LRR).
+                        </li>
+                        <li>Kerentanan fisik pesisir diperoleh melalaui metode Coastal Vulnerability Index (CVI) yang
+                            menghitung tingkat kerentanan berdasarkan skor paramater yang dilibatkan, yaitu:
+                            <ol style="padding-left: 13px; list-style-type: circle; padding-top: 4px;">
+                                <li>Kemiringan Lereng</li>
+                                <li>Geologi</li>
+                                <li>Tipologi Geomorfologi Pesisir</li>
+                                <li>Tunggang Pasang Surut</li>
+                                <li>Kenaikan Muka Air Laut</li>
+                                <li>Laju Perubahan Garis Pantai</li>
+                                <li>Rata-rata Ketinggian Gelombang</li>
+                            </ol>
+                        </li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary>Kerentanan Pesisir</summary>
+                <div class="checkbox-group dropdown-content">
+                    <p style="font-size: 13px;"><strong>Kerentanan Pesisir</strong></p>
+                    <p style="font-size: 13px; text-align: justify;">Gornitz (1991) dalam Khakhim, dkk. (2016), menjelaskan bahwa terdapat 7 (tujuh)
+                        parameter yang dianggap berpengaruh dalam menilai kerentanan pesisir, yakni
+                        geomorfologi, topografi, kenaikan muka air laut, perubahan garis pantai, tunggang
+                        pasang surut, tinggi gelombang, dan geologi. Berdasarkan karakteristik parameter
+                        yang digunakan, CVI menerapkan metode skoring untuk mengklasifikasikan tingkat
+                        kerentanannya. Setiap parameter dikelompokkan menjadi 5 kelas kerentanan, yaitu
+                        sangat rendah, rendah, menengah, tinggi, dan sangat tinggi. Pengelompokan tersebut
+                        menyesuaikan dengan karakteristik parameter dalam menghadapi bahaya penggenangan di
+                        pesisir.</p>
+                    <ol style="font-size: 13px; padding-left: 10px;">
+                        <li><strong>Kemiringan Lereng</strong><br>
+                            Kemiringan lereng menjadi aspek yang mengukur tingkat kerentanan pesisir menghadapi ancaman
+                            penggenangan ketika terjadi kenaikan muka air laut, banjir rob, tsunami, atau badai.
+                            Lereng yang semakin landai meningkatkan kerentanan pesisir menghadapi ancaman bahaya
+                            tersebut. Sebaliknya, semakin curam lereng pesisir, semakin kuat ketahanannya dalam
+                            menghadapi ancaman bahaya tersebut. </li>
+                        <br>
+                        <li><strong>Geologi</strong><br>
+                            Batuan merupakan aspek yang membantu dalam memahami karaketristik material penyusun pesisir.
+                            Masing-masing material penyusun tersebut memiliki respon yang berbeda terhadap bahaya
+                            pesisir. Pesisir yang tersusun atas material keras atau batuan padat memiliki tingkat
+                            ketahanan lebih baik dalam menghadapi bahaya tersebut karena tidak mudah tererosi.
+                            Sebaliknya, pesisir yang tersusun atas material lunak atau sedimen lepas memiliki tingkat
+                            kerentanan lebih tinggi karena karakteristiknya yang mudah tererosi atau diangkut oleh
+                            gelombang kuat yang datang. </li>
+                        <br>
+                        <li><strong>Tipologi Geomorfologi Pesisir</strong><br>
+                            Tipologi geomorfologi di pesisir merepresentasikan ketahanan suatu pesisir dalam menghadapi
+                            ancaman bahaya. Pesisir yang tersusun atas batuan dengan material lepas pada lereng yang
+                            datar-landai memiliki ketahanan lebih rendah dibandingkan dengan pesisir yang tersusun atas
+                            sedimen terkonsolidasi ataupun batuan hasil aktivitas vulkanik. Kondisi ini terjadi karena
+                            material lepas tersebut lebih mudah terbawa oleh gelombang laut, serta datarannya yang
+                            bersifat menahan air lebih lama sehingga lebih mudah terjadi penggenangan dan kenaikan muka
+                            air laut. Sementara itu, pesisir dengan material yang lebih padat atau batuan yang lebih
+                            keras dengan lereng agak curam-curam lebih tahan karena memiliki satuan batuan yang lebih
+                            kuat terhadap berbagai ancaman bahaya tersebut, serta lerengnya yang bersifat mengalirkan
+                            air yang berada di permukaannya. </li>
+                        <br>
+                        <li><strong>Tunggang Pasang Surut</strong><br>
+                            Tingkat kerentanan pesisir akibat pasang surut dapat ditentukan dari nilai tunggang pasang
+                            surutnya. Menurut Gornitz, kerentanan pesisir berdasarkan nilai tunggang pasang surut
+                            terbagi ke dalam 5 tingkatan, semakin besar nilai tunggang pasutnya menunjukkan semakin
+                            rentannya wilayah pesisir tersebut. Hal ini karena nilai tunggang pasut yang semakin besar
+                            memperluas zona intertidal dan meningkatkan risiko genangan ataupun erosi.</li>
+                        <br>
+                        <li><strong>Kenaikan Muka Air Laut</strong><br>
+                            Kenaikan muka air laut merupakan salah satu dampak dari terjadinya perubahan iklim.
+                            Kenaikan muka air laut menimbulkan bahaya penggenangan di wilayah pesisir yang dapat
+                            mempengaruhi ketidakstabilan garis pantai. Apabila terjadi penggenangan, posisi garis
+                            pantai dapat mengalami kemunduran dan menghambat aktivitas masyarakat di sekitar area
+                            penggenangan tersebut. Akhirnya, fenomena ini tidak hanya merugikan lingkungan, tapi
+                            juga dapat mempengaruhi tingkat kesejahteraan masyarakat. </li>
+                        <br>
+                        <li><strong>Laju Perubahan Garis Pantai</strong><br>
+                            Laju perubahan garis pantai merupakan salah satu faktor penting yang perlu dilibatkan
+                            dalam menilai kerentanan pesisir karena dapat merepresentasikan dinamika pantai akibat
+                            proses abrasi atau akresi. Pesisir yang cenderung mengalami abrasi menunjukkan bahwa
+                            pesisir tersebut sangat mudah terpengaruh oleh berbagai bahaya dari laut. Apabila terjadi
+                            secara terus menerus, dampaknya dapat mengancam infrastruktur dan aktivitas di sekitar
+                            pesisir tersebut karena jarak terhadap laut yang semakin pendek. Fenomena akresi yang
+                            terjadi di suatu pesisir membuat pesisir tersebut cenderung dikategorikan lebih aman.
+                            Hal ini karena fenomena tersebut dapat memperluas daratan, sehingga jarak laut terhadap
+                            infrastruktur dan aktivitas masyarakat menjadi lebih jauh dan lebih terlindungi.</li>
+                        <br>
+                        <li><strong>Rata-rata Ketinggian Gelombang</strong><br>
+                            Gelombang merupakan salah satu faktor yang berperan besar dalam dinamika pesisir.
+                            Energi yang dibawa oleh gelombang dapat memicu terjadinya transportasi sedimen, baik
+                            penggerusan ataupun kembali ke tepi pantai. Selain itu, energi gelombang juga dapat
+                            mempengaruhi jangkauan rembesan air laut yang mencapai daratan. Semakin tinggi gelombang
+                            membuat jangkauannya lebih jauh mencapai daratan dan umumnya bersifat merusak. Akibatnya,
+                            pesisir dengan material lepas yang tidak dilindungi oleh vegetasi atau struktur apapun
+                            akan sangat dipengaruhi oleh kekuatan gelombang tersebut. Sebaliknya, pesisir dengan
+                            material yang lebih padat dan keras lebih tahan dan tidak mudah tererosi dari bahaya
+                            gelombang tersebut.</li>
+                    </ol>
+                </div>
+            </details>
+
         </div>
+        <div class="grup-bawah" style="font-size: 12px; text-align: center;">
+            <p><strong>Program Studi Sarjana Terapan</strong><br>
+                <strong>Sistem Informasi Geografis</strong><br>
+                <strong>Departemen Teknologi Kebumian</strong><br>
+                <strong>Sekolah Vokasi</strong><br>
+                <strong>Universitas Gadjah Mada</strong><br>
+                <strong>2025</strong>
+            </p>
+        </div>
+
     </div>
 
     <!-- New Visualization Tab -->
@@ -420,9 +642,9 @@
     <!-- Leaflet Spin for loading indicator -->
     <script src="https://cdn.jsdelivr.net/npm/spin.js@2.3.2/spin.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-spin@1.1.0/leaflet.spin.min.js"></script>
-    <!-- <script src="https://elyueich.github.io/leaflet-dashboard/control.js"></script> -->
     <script src="https://elyueich.github.io/BD-PROYEK-AKHIR/control.js"></script>
 </body>
 
 </html>
+
 
