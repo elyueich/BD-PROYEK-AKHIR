@@ -735,7 +735,7 @@ summary {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
 }
 
@@ -745,7 +745,7 @@ summary::marker {
 }
 
 summary i {
-    font-size: 14px;
+    font-size: 13px;
     transition: transform 0.2s ease;
 }
 
