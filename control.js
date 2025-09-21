@@ -627,15 +627,15 @@ document.addEventListener("DOMContentLoaded", () => {
       styleFunction = stylebslnLayer;
     } else if (layerName === "sctepr") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/EPR.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/EPRCLIP.geojson";
       styleFunction = styleeprLayer;
     } else if (layerName === "sctnsm") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/NSM.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/NSMCLIP.geojson";
       styleFunction = stylensmLayer;
     } else if (layerName === "sctlrr") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/LRR.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/LRRCLIP.geojson";
       styleFunction = stylelrrLayer;
     } else if (layerName === "scar") {
       geojsonUrl =
@@ -2737,3 +2737,4 @@ document.addEventListener("DOMContentLoaded", () => {
     // Bersihkan marker atau lakukan aksi lain jika perlu
   });
 });
+
