@@ -42,7 +42,8 @@ body {
 }
 
 .geolocation-button,
-.fullscreen-button {
+.fullscreen-button,
+.reset-view-button {
     background: none;
     border: none;
     cursor: pointer;
@@ -52,7 +53,8 @@ body {
 }
 
 .geolocation-button:hover,
-.fullscreen-button:hover {
+.fullscreen-button:hover,
+.reset-view-button:hover {
     color: #2563eb;
 }
 
@@ -122,7 +124,7 @@ body {
     margin-left: 0;
     padding: 0;
     background-color: white;
-    min-height: 100vh;
+    min-height: calc(100vh - 40px);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -138,7 +140,7 @@ body {
 .menu-div {
     background-color: #F2F2F2;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 380px;
     /* Default width */
     display: none;
     position: fixed;
@@ -149,8 +151,8 @@ body {
     flex-direction: column;
     resize: horizontal;
     overflow: hidden;
-    min-width: 200px;
-    max-width: 500px;
+    min-width: 300px;
+    max-width: 650px;
 }
 
 .menu-div.show {
@@ -200,7 +202,7 @@ body {
 .select-group {
     display: block;
     margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .radio-group input[type="radio"],
@@ -214,12 +216,12 @@ body {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 /* Add CSS for the popup table */
 .leaflet-popup table {
-    font-size: 13px;
+    font-size: 12px;
     border-collapse: collapse;
     width: 100%;
 }
@@ -277,9 +279,9 @@ body {
 
 /* Tambahkan CSS untuk memastikan kontrol skala terlihat */
 .leaflet-control-scale {
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 5px;
-    border-radius: 5px;
+    /* background-color: rgba(255, 255, 255, 0.801); */
+    /* padding-top: 5px; */
+    /* border-radius: 5px; */
     z-index: 1000;
     /* Nilai z-index yang lebih tinggi */
 }
@@ -301,6 +303,7 @@ body {
 .show-image-btn:hover {
     background-color: #45a049;
 }
+
 .show-nsm-btn {
     background-color: #4CAF50;
     border: none;
@@ -318,6 +321,7 @@ body {
 .show-nsm-btn:hover {
     background-color: #45a049;
 }
+
 .show-epr-btn {
     background-color: #4CAF50;
     border: none;
@@ -335,6 +339,7 @@ body {
 .show-epr-btn:hover {
     background-color: #45a049;
 }
+
 .show-lrr-btn {
     background-color: #4CAF50;
     border: none;
@@ -603,6 +608,7 @@ body {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
+    font-size: 12px;
 }
 
 .legend-section {
@@ -636,7 +642,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
 }
 
@@ -660,32 +666,37 @@ body {
 }
 
 .legend-subsection-title {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: bold;
-    color: #555;
+    color: #000000;
     margin-top: 10px;
     margin-bottom: 5px;
-    padding-left: 10px;
 }
 
 .legend-color-box {
     width: 20px;
-    height: 10px;
-    border: 1px solid #ccc;
+    height: 3px;
+    /* border: 1px solid #ccc; */
     margin-right: 10px;
 }
 
 /* Style for the table list and icons */
 .layer-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between; /* <- Ini akan mendorong grup ikon ke kanan */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Tambahkan ini untuk memberi jarak ANTAR IKON di dalam grup */
+.layer-icons {
+  display: flex;
+  gap: 4px;
 }
 
 .table-icon {
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 20px;
     color: #3b82f6;
     transition: color 0.2s;
 }
@@ -703,7 +714,7 @@ body {
 #table-content table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 #table-content th,
@@ -716,6 +727,17 @@ body {
 #table-content th {
     background-color: #e0e0e0;
     font-weight: bold;
+}
+
+.fa-circle-info {
+    cursor: pointer;
+    margin-left: 20px;
+    color: #3b82f6;
+    transition: color 0.2s;
+    
+}
+.fa-circle-info:hover {
+    color: #2563eb;
 }
 
 /* Styles for the dropdown */
@@ -760,4 +782,14 @@ details[open] summary i {
 
 .filter-group {
     display: none;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+/* Tambahkan ini di file CSS Anda */
+.selected-row {
+    background-color: rgba(0, 255, 255, 0.5) !important;
+    /* Warna biru muda yang lembut */
+    font-weight: bold;
+    cursor: pointer,
 }
