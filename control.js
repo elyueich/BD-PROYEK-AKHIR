@@ -1,5 +1,18 @@
+/**
+ * =======================================================================
+ * APLIKASI PETA INTERAKTIF PERUBAHAN GARIS PANTAI DAN KERENTANAN PESISIR
+ * =======================================================================
+ * let = untuk mendeklarasikan variabel yang nilainya bisa diubah (reassignable).
+   Variabel dapat diberikan nilai baru kapan pun setelah deklarasi awal.
+   Contoh: let angka = 10;
+   angka = 20; // Ini diperbolehkan.
+ * const = untuk mendeklarasikan variabel yang nilainya tidak dapat diubah (immutable) setelah dideklarasikan. 
+   Jika variabel diberi nilai baru/mencoba mengubah nilai yang telah dideklarasikan di awal, maka JavaScript akan melempar error.
+   Contoh: const nama = 'Budi';
+   nama = 'Andi'; // Ini akan menghasilkan error.
+ */
 document.addEventListener("DOMContentLoaded", () => {
-  //// VARIABEL PENGHUBUNG DENGAN ELEMEN/ITEM DI HTML MELALUI ID //////
+  // A. VARIABEL PENGHUBUNG DENGAN ELEMEN/ITEM DI HTML MELALUI ID ////
   const menuToggleArea = document.getElementById("menu-toggle-area");
   const menuToggleIcon = document.getElementById("menu-toggle");
   const sideMenu = document.getElementById("sidemenu");
@@ -10,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const geolocationBtn = document.getElementById("geolocation-btn");
   const fullscreenBtn = document.getElementById("fullscreen-btn");
   const transparencySlider = document.getElementById("transparency-slider");
+  const infoIcons = document.querySelectorAll(".fa-circle-info");
   const tableIcons = document.querySelectorAll(".table-icon");
   const tableContent = document.getElementById("table-content");
   const legendaContainer = document.getElementById("legenda-container");
@@ -21,15 +35,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const kecamatanFilter = document.getElementById("kecamatan-filter");
   const desaFilterGroup = document.getElementById("desa-filter-group");
   const desaFilter = document.getElementById("desa-filter");
-  const skorFilterGroup = document.getElementById("skor-filter-group"); // ➕ TAMBAHKAN INI
-  const skorFilter = document.getElementById("skor-filter"); // ➕ TAMBAHKAN INI
+  const skorFilterGroup = document.getElementById("skor-filter-group");
+  const skorFilter = document.getElementById("skor-filter");
   const cviFilterGroup = document.getElementById("cvi-filter-group");
   const cviFilter = document.getElementById("cvi-filter");
   const layerCheckboxes = document.querySelectorAll('input[name="overlay"]');
   const resetButton = document.getElementById("reset-filter-btn");
   const informasiText = document.getElementById("informasi-text");
 
-  // VARIABEL PENGHUBUNG UNTUK TAB VISUALISASI GAMBAR, GRAFIK, DSB
+  // B. VARIABEL PENGHUBUNG UNTUK TAB VISUALISASI GAMBAR, GRAFIK, DSB
   const visualisasiTabContainer = document.getElementById(
     "visualisasi-tab-container"
   );
@@ -46,15 +60,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
 
-  //// MENAMPILKAN PETA LEAFLET PADA DIV ID MAP ////
-  var map = L.map("map").setView([-8.757785434451973, 115.17332621162974], 12);
+  // ===================================================================
+  // 1. PETA DAN CONTROL PETA
+  // ===================================================================
+  // A. Menampilkan Peta pada DIV 'map'
+  var defaultLat = -8.757785434451973;
+  var defaultLng = 115.17332621162974;
+  var defaultZoom = 12;
+  var map = L.map("map").setView([defaultLat, defaultLng], defaultZoom);
 
-  // Add a scale control to the map
-  // L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
-  // Add a scale control to the map
+  // B. Skala Peta
   L.control.scale({ imperial: false, position: "topright" }).addTo(map);
 
-  // MENENTUKAN BASEMAP YANG AKAN DISEDIAKAN PADA PETA
+  // C. Mendeklrasaikan pilihan Basemap
   var esriGrayCanvas = L.tileLayer.provider("Esri.WorldGrayCanvas");
   var osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution:
@@ -62,15 +80,31 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   var esriSatelitLayer = L.tileLayer.provider("Esri.WorldImagery");
 
-  // DEFAULT BASEMAP SAAT WEB PERTAMA KALI DIAKSES
+  // D. Default Basemap saat website pertama kali diakses
   esriGrayCanvas.addTo(map);
 
+  // E. Adjust map size when layout changes
+  const resizeObserver = new ResizeObserver(() => {
+    map.invalidateSize();
+  });
+  resizeObserver.observe(mainContent);
+
+  // Dapatkan elemen tombol dan tambahkan event listener
+  var resetZoom = document.getElementById("reset-view-btn");
+
+  resetZoom.addEventListener("click", function () {
+    // Mengembalikan peta ke posisi dan zoom default
+    map.setView([defaultLat, defaultLng], defaultZoom);
+  });
+
+  // ===================================================================
+  // 2. VARIABEL GLOBAL & STATE APLIKASI
+  // ===================================================================
+  // A. Variabel untuk pengaturan Basemap
   let currentBasemap = esriGrayCanvas;
+  const basemapControls = document.getElementById("basemap-controls");
 
-  let geolocationLayer = null;
-
-  //// VARIABEL UNTUK MENYIMPAN DATA DAN LAYERS GEOJSON ////
-  // Variables to store GeoJSON layers and data
+  // B. Variabel untuk pengaturan dan penyimpanan layers dan data GeoJSON
   let slrlnLayer = null;
   let waveLayer = null;
   let glglnLayer = null;
@@ -85,6 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let sctlrrLayer = null;
   let scarLayer = null;
   let cvilnLayer = null;
+  let ardesaLayer = null;
   let garisPantai2016Layer = null;
   let garisPantai2017Layer = null;
   let garisPantai2018Layer = null;
@@ -110,6 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     sctlrr: null,
     scar: null,
     cviln: null,
+    ardesa: null,
     "garis-pantai-2016": null,
     "garis-pantai-2017": null,
     "garis-pantai-2018": null,
@@ -122,27 +158,55 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const geojsonData = {};
 
-  /// VISUALISASI DATA ... ///
-  // Array to hold visualisasi data
+  // C. Variabel untuk mengatur Visualisasi Data
   let visualisasiItems = [];
   let currentVisualisasiIndex = 0;
-
-  // Keep track of the topmost overlay layer and an array of active layers
+  // C.1. untuk melacak topmost overlay layer and an array of active layers
   let currentTopLayer = null;
+  // Variabel baru untuk melacak layer tabel yang sedang dibuka
+  let currentTableLayerName = null;
 
-  /// VARIABEL UNTUK MENYIMPAN LAYER YANG AKTIF SAAT CHECKBOX DI CENTANG >>> Berhubungan dengan Filter
-  let activeLayers = []; // untuk filter kecamatan dan desa (all data)
-  let activeLayersWithSkor = []; // untuk filter skor (data kerentanan)
-  let activeLayersWithCVI = []; // untuk filter cvi (data kerentanan all)
+  // D. Variabel untuk menyimpan layer yang aktif saat Checkbox dicentang >>> Berhubungan dengan Filter
+  let activeLayers = []; // D.1. untuk filter kecamatan dan desa (all data)
+  let activeLayersWithSkor = []; // D.2. untuk filter skor (data kerentanan)
+  let activeLayersWithCVI = []; // D.3. untuk filter cvi (data kerentanan all)
 
-  // Adjust map size when layout changes
-  const resizeObserver = new ResizeObserver(() => {
-    map.invalidateSize();
-  });
-  resizeObserver.observe(mainContent);
+  // E. Variabel untuk pengaturan highlight layer dan tabel data
+  // E.1. Menyimpan layer feature yang disorot di peta
+  let selectionState = {
+    layer: null, // Akan menyimpan objek feature Leaflet (polygon/titik)
+    layerName: null, // Akan menyimpan nama layer induknya (misal: 'cviln')
+  };
+  // E.2. Menyimpan baris <tr> yang disorot di tabel
+  let lastSelectedTableRow = null; // Sebelumnya lastHighlightedTableRow
 
-  // / /  /  S I D E  M E N U  / / / //
-  /// Menambahkan 'event listener' yang akan berjalan saat area tombol menu diklik ///
+  // E. Variabel yang menyimpan pengaturan Style untuk feature yang disorot di peta
+  const highlightStyle = {
+    weight: 4,
+    color: "#00FFFF", // Cyan terang agar menonjol
+    fillColor: "#00FFFF",
+    fillOpacity: 0.7,
+  };
+
+  // F. Variabel untuk pengaturan Dropdown Chechbox Layers Data yang tersimpan
+  const overlayControlGroups = document.querySelectorAll(".checkbox-group");
+
+  // G. Variabel untuk pengaturan Geolocation
+  let locationMarker = null;
+  let accuracyCircle = null;
+
+  // H. Dapatkan elemen HTML untuk menampilkan koordinat
+  var coordDisplay = document.getElementById("coordinate-display");
+  var isCoordLocked = false; // Status untuk menahan koordinat
+  var isListening = false; // Status baru untuk mengaktifkan/menonaktifkan event
+  var currentMarker = null; // Menyimpan referensi marker yang sedang aktif
+
+  // I. Reset Zoom Layer
+
+  // ===================================================================
+  // 3. EVENT LISTENER UNTUK MENU DAN ITEM SIDE MENU KETIKA DI KLIK
+  // ===================================================================
+  // A. Area Menu
   menuToggleArea.addEventListener("click", () => {
     // Mengecek apakah menu samping saat ini sedang ditampilkan (memiliki class 'show-sidemenu').
     const isSideMenuVisible = sideMenu.classList.contains("show-sidemenu");
@@ -168,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /// Menambahkan 'event listener' yang akan berjalan saat area tombol menu item diklik ///
+  // B. Area Item Side Menu
   menuItems.forEach((item) => {
     item.addEventListener("click", () => {
       //mengambil id target
@@ -191,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /// Menambahkan 'event listener' yang akan berjalan saat area tombol close pada panel/tab sidemenu diklik ///
+  // C. Tombol Close pada Panel/Tab Sidemenu
   closeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const targetId = button.getAttribute("data-target-close");
@@ -207,16 +271,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  /// Menambahkan 'event-listener' yang akan berjalan saat tombol close tab visualisasi diklik ///
+  // D. Tombol Close Tab Visualisasi Data
   visualisasiTabCloseBtn.addEventListener("click", () => {
     visualisasiTabContainer.style.display = "none";
     visualisasiItems = []; // Bersihkan array visualisasi saat tab ditutup
     currentVisualisasiIndex = 0;
   });
 
-  /// RADIO BUTTON ///
-  /// Mengatur panel dropdown pilihan basemap
-  const basemapControls = document.getElementById("basemap-controls");
+  // ===================================================================
+  // 4. EVENT LISTENER UNTUK ITEM PADA PANEL SIDE MENU 'LAYER' DI KLIK
+  // ===================================================================
+  // A. Panel Dropdown Pilihan Basemap ==> Radio Button
   basemapControls.addEventListener("change", (e) => {
     const selectedBasemap = e.target.value;
 
@@ -236,17 +301,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  //// CHECK BOX  ////
-  // Dapatkan semua grup checkbox
-  const overlayControlGroups = document.querySelectorAll(".checkbox-group");
-
-  /// Menambahkan event listener untuk setiap grup checkbox
+  // B. Panel Dropdown Group Checkbox
   overlayControlGroups.forEach((group) => {
     group.addEventListener("change", async (e) => {
       const layerValue = e.target.value;
       const isChecked = e.target.checked;
       let addedLayer = null;
-      const layerId = layerValue.replace(/-/g, "_"); // Create a valid variable name
 
       if (isChecked) {
         // Check if the layer has been loaded before
@@ -328,6 +388,9 @@ document.addEventListener("DOMContentLoaded", () => {
       //Indeks Kerentanan
       if (layerValue === "cviln")
         cvilnLayer = isChecked ? geojsonLayers[layerValue] : null;
+      //Batas Administrasi
+      if (layerValue === "ardesa")
+        ardesaLayer = isChecked ? geojsonLayers[layerValue] : null;
 
       /// Mengatur isi array activeLayers berdasarkan status checkbox
       if (isChecked) {
@@ -335,6 +398,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         activeLayers = activeLayers.filter((item) => item !== layerValue);
       }
+      /// INI GA ADA DI FILTER TABEL ///
 
       /// Mengatur kondisi filter Kec dan Desa berdasarkan isi array dari activeLayers
       if (activeLayers.length > 0) {
@@ -342,7 +406,7 @@ document.addEventListener("DOMContentLoaded", () => {
         filterInitialText.style.display = "none";
         kecamatanFilterGroup.style.display = "block";
         desaFilterGroup.style.display = "block";
-        updateFilterDropdowns();
+        updateFilterDropdowns(); //INI DILETAKINNYA DI LUAR IF-ELSE KALAU FILTER-TABEL
       } else {
         // ini tidak ada isinya
         kecamatanFilter.value = "";
@@ -354,15 +418,131 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // berhubungan dengan filter berdasarkan skor
       handleLayerToggle(layerValue, isChecked);
-
       // berhubungan dengan update isi legenda
       updateLegend();
     });
   });
-  //// CHECK BOX  ////
 
-  //// FUNGSI UNTUK MEMUAT DATA GEOJSON ////
-  // Fungsi untuk memuat data GeoJSON
+  // C. Ikon Tabel
+  tableIcons.forEach((icon) => {
+    icon.addEventListener("click", () => {
+      const layerName = icon.getAttribute("data-layer");
+      currentTableLayerName = layerName;
+      displayTable(layerName);
+    });
+  });
+
+  infoIcons.forEach((icon) => {
+    icon.addEventListener("click", () => {
+      const layerName = icon.getAttribute("data-layer");
+      if (layerName === "sctnsm") {
+        // Buka menu Informasi dan tandai sebagai aktif
+        menuDivs.forEach((div) => div.classList.remove("show"));
+        menuItems.forEach((item) => item.classList.remove("active"));
+        const infoMenu = document.getElementById("informasi-menu");
+        const infoMenuItem = document.querySelector(
+          '.sidemenu-item[data-target="informasi-menu"]'
+        );
+        infoMenu.classList.add("show");
+        infoMenuItem.classList.add("active");
+        mainContent.classList.add("pushed-by-sidemenu");
+        sideMenu.classList.add("show-sidemenu");
+        menuToggleIcon.classList.remove("fa-bars");
+        menuToggleIcon.classList.add("fa-arrow-left");
+        // Tampilkan teks informasi untuk SLR
+        informasiText.innerHTML = `
+          <h4 style="font-size: 14px; text-align: center; color: #000000ff;">Net Shoreline Movement</h4>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"><strong>Net Shoreline Movement (NSM)</strong> 
+          adalah pengukuran perubahan posisi garis pantai antara dua waktu yang berbeda. 
+          Secara sederhana, ini adalah jarak total seberapa jauh sebuah pantai telah maju (akresi) 
+          atau mundur (abrasi) dalam periode tertentu.</p>
+          <ol style="font-size: 13px; text-align: justify; color: #000000ff; padding-left: 15px;">
+          <li><strong>Abrasi:</strong> Pengikisan daratan oleh gelombang dan arus, yang menyebabkan 
+          garis pantai<strong> mundur</strong>.</li>
+          <li><strong>Akresi:</strong> Penumpukan sedimen (pasir/lumpur) yang dibawa oleh arus atau 
+          sungai, yang menyebabkan garis pantai<strong> maju</strong>ke arah laut.</li>
+          </ol>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"> NSM memberitahu kita proses mana yang lebih dominan. Jika nilai NSM negatif, berarti 
+          abrasi lebih besar dan pantai tersebut terkikis. Jika nilainya positif, berarti akresi 
+          lebih dominan dan pantai tersebut bertambah luas.</p>`;
+        informasiText.style.display = "block";
+      } else if (layerName === "sctepr") {
+        // Buka menu Informasi dan tandai sebagai aktif
+        menuDivs.forEach((div) => div.classList.remove("show"));
+        menuItems.forEach((item) => item.classList.remove("active"));
+        const infoMenu = document.getElementById("informasi-menu");
+        const infoMenuItem = document.querySelector(
+          '.sidemenu-item[data-target="informasi-menu"]'
+        );
+        infoMenu.classList.add("show");
+        infoMenuItem.classList.add("active");
+        mainContent.classList.add("pushed-by-sidemenu");
+        sideMenu.classList.add("show-sidemenu");
+        menuToggleIcon.classList.remove("fa-bars");
+        menuToggleIcon.classList.add("fa-arrow-left");
+        // Tampilkan teks informasi untuk SLR
+        informasiText.innerHTML = `
+          <h4 style="font-size: 14px; text-align: center; color: #000000ff;">End Point Rate</h4>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"><strong>End Point Rate (EPR)</strong> 
+          adalah salah satu metode statistik yang digunakan dalam Digital 
+          Shoreline Analysis System (DSAS) untuk menghitung laju perubahan garis pantai. </p>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"> Perhitungan EPR dilakukan dengan membagi jarak perubahan atau pergerakan garis pantai 
+          dengan rentang waktu antara garis pantai tertua dan terbaru yang terekam. Metode ini 
+          secara efektif menunjukkan seberapa cepat pesisir mengalami akresi (penambahan daratan) 
+          atau erosi (pengikisan daratan) dalam satuan meter per tahun.
+          </p>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"> Nilai positif dari EPR mengindikasikan terjadinya akresi atau penambahan daratan ke arah 
+          laut, sedangkan nilai negatif menunjukkan adanya erosi atau mundurnya garis pantai ke arah 
+          daratan. Keunggulan utama dari metode ini adalah kesederhanaan perhitungannya dan kebutuhan 
+          data yang minim, yaitu hanya dua data garis pantai dari waktu yang berbeda.".</p>`;
+        informasiText.style.display = "block";
+      } else if (layerName === "sctlrr") {
+        // Buka menu Informasi dan tandai sebagai aktif
+        menuDivs.forEach((div) => div.classList.remove("show"));
+        menuItems.forEach((item) => item.classList.remove("active"));
+        const infoMenu = document.getElementById("informasi-menu");
+        const infoMenuItem = document.querySelector(
+          '.sidemenu-item[data-target="informasi-menu"]'
+        );
+        infoMenu.classList.add("show");
+        infoMenuItem.classList.add("active");
+        mainContent.classList.add("pushed-by-sidemenu");
+        sideMenu.classList.add("show-sidemenu");
+        menuToggleIcon.classList.remove("fa-bars");
+        menuToggleIcon.classList.add("fa-arrow-left");
+        // Tampilkan teks informasi untuk SLR
+        informasiText.innerHTML = `
+          <h4 style="font-size: 14px; text-align: center; color: #000000ff;">Linear Regression Rate</h4>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"><strong>Linear Regression Rate (LRR)</strong> 
+          LRR (Linear Regression Rate)
+          LRR adalah tingkat perubahan garis pantai yang dihitung menggunakan metode statistik 
+          yang disebut regresi linier. Metode ini menganalisis beberapa posisi garis pantai dari 
+          waktu ke waktu (misalnya, dari tahun 1980, 1990, 2000, 2010, dan 2020) untuk menemukan 
+          garis tren atau "garis paling cocok" (line of best fit) yang mewakili pergerakan pantai 
+          secara keseluruhan.</p>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;">Sederhananya, jika Anda memiliki banyak titik data posisi pantai, LRR akan menarik satu
+           garis lurus yang paling mendekati semua titik tersebut. Kemiringan (slope) dari garis 
+           lurus inilah yang menjadi nilai LRR, yang menunjukkan kecepatan rata-rata perubahan 
+           pantai per tahun.</p>
+          <p style="font-size: 13px; text-align: justify; color: #000000ff;"><strong>Perbedaan Utama EPR dan LRR</strong></p> 
+          <ol style="font-size: 13px; text-align: justify; color: #000000ff; padding-left: 15px;">
+          <li><strong>EPR:</strong> hanya melihat <strong>dua titik data</strong>: titik awal dan titik akhir. 
+          Ini seperti hanya melihat di mana perjalanan Anda dimulai dan di mana berakhir, 
+          tanpa peduli rute di antaranya</li>
+          <li><strong>LRR:</strong> melihat semua <strong>titik data yang tersedia</strong>. Ini memberikan gambaran 
+          yang jauh lebih andal dan stabil tentang tren jangka panjang, karena tidak terlalu 
+          terpengaruh oleh posisi pantai yang aneh atau tidak biasa di satu tahun tertentu 
+          (misalnya, akibat badai sesaat).</li>
+          </ol>`;
+        informasiText.style.display = "block";
+      }
+    });
+  });
+
+  // ===================================================================
+  // 5. FUNGSI - FUNGSI
+  // ===================================================================
+  // A. Fungsi Untuk Memuat Data GeoJSON
   async function loadGeoJSONLayer(layerName) {
     let geojsonUrl = "";
     let styleFunction;
@@ -447,15 +627,15 @@ document.addEventListener("DOMContentLoaded", () => {
       styleFunction = stylebslnLayer;
     } else if (layerName === "sctepr") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/EPR.geojson";
       styleFunction = styleeprLayer;
     } else if (layerName === "sctnsm") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/NSM.geojson";
       styleFunction = stylensmLayer;
     } else if (layerName === "sctlrr") {
       geojsonUrl =
-        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/DSAS.geojson";
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Perubahan/LRR.geojson";
       styleFunction = stylelrrLayer;
     } else if (layerName === "scar") {
       geojsonUrl =
@@ -468,9 +648,15 @@ document.addEventListener("DOMContentLoaded", () => {
         "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/KRNTNLN.geojson";
       styleFunction = styleCVILayer;
     }
+    /// GROUP Batas Administrasi
+    else if (layerName === "ardesa") {
+      geojsonUrl =
+        "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/ADMIN.geojson";
+      styleFunction = styleArdesaLayer;
+    }
 
     /// Pengaturan Pop-Up
-    onEachFeatureFunction = (feature, layer) => {
+    onEachFeatureFunction = (feature, layer, layerName) => {
       if (feature.properties) {
         let popupContent = "<table>";
         for (let key in feature.properties) {
@@ -486,21 +672,40 @@ document.addEventListener("DOMContentLoaded", () => {
         // Kondisi untuk menampilkan tombol hanya pada layer tertentu
         if (layerName === "slrln" || layerName === "waveln") {
           popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Visualisasi</button>`;
-        } else if (layerName === "cviln") {
-          popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Informasi</button>`;
-        } else if (layerName === "scar") {
+        } 
+        // else if (layerName === "cviln") {
+        //   popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Informasi</button>`;
+        // } 
+        else if (layerName === "scar") {
           popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Grafik</button>`;
-        } else if (
-          layerName === "sctlrr" ||
-          layerName === "sctepr" ||
-          layerName === "sctnsm"
-        ) {
-          popupContent += `</table><button class="show-epr-btn" data-layer-name="${layerName}">EPR</button><button class="show-nsm-btn" data-layer-name="${layerName}">NSM</button><button class="show-lrr-btn" data-layer-name="${layerName}">LRR</button>`;
+        } else if (layerName === "sctnsm" || layerName === "sctepr" || layerName === "sctlrr") {
+          popupContent += `</table><button class="show-image-btn" data-layer-name="${layerName}">Tampilkan Tabel Ringkasan</button>`;
         } else {
           popupContent += `</table>`;
         }
         layer.bindPopup(popupContent);
       }
+
+      // --- TAMBAHAN BARU UNTUK INTERAKSI PETA KE TABEL ---
+      layer.on("click", async function (e) {
+        L.DomEvent.stopPropagation(e);
+        const featureId = e.target.feature.properties._generated_id; // Ganti UNIQUE_ID
+
+        // Cek apakah tabel yang benar sedang ditampilkan
+        // PENTING: Anda harus meneruskan layerName ke selectFeatureById
+        if (currentTableLayerName === layerName) {
+          selectFeatureById(featureId, layerName);
+        } else {
+          // HAPUS setTimeout dan ganti dengan await
+
+          // 1. Tunggu sampai tabel SELESAI ditampilkan
+          await displayTable(layerName);
+
+          // 2. SETELAH tabel selesai, baru panggil selectFeatureById
+          selectFeatureById(featureId, layerName);
+        }
+      });
+      //
     };
 
     // Fitur loading saat data dimuat
@@ -517,12 +722,22 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error("Network response was not ok");
       const data = await response.json();
 
+      // Cek apakah data punya features dan belum punya ID buatan
+      if (data.features && !data.features[0].properties._generated_id) {
+        data.features.forEach((feature, index) => {
+          // Buat ID unik dan sisipkan ke dalam properties
+          feature.properties._generated_id = `${layerName}-${index}`;
+        });
+      }
+
       // Simpan data di cache
       geojsonData[layerName] = data;
 
       const layer = L.geoJSON(data, {
         style: styleFunction,
-        onEachFeature: onEachFeatureFunction,
+        // BERIKAN FUNGSI ANONIM (RESEP) KEPADA LEAFLET
+        onEachFeature: (feature, layer) =>
+          onEachFeatureFunction(feature, layer, layerName),
       });
 
       map.spin(false);
@@ -533,27 +748,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return null;
     }
   }
-  //// FUNGSI UNTUK MEMUAT DATA GEOJSON ////
 
-  //// SIMBOLISASI ////
-  // Fungsi untuk menentukan simbolisasi garis pantai berdasarkan filter
+  // B. Fungsi Untuk Mengatur Simbolisasi Layer Data pada Peta
+  // B.1. Garis Pantai
   function styleGarisPantai(feature, year) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
-
     const featureKec = (feature.properties.Kec || "").toLowerCase();
     const featureDesa = (feature.properties.Desa || "").toLowerCase();
-
     let isVisible = true;
-
     if (selectedKecamatan && featureKec !== selectedKecamatan) {
       isVisible = false;
     }
-
     if (selectedDesa && featureDesa !== selectedDesa) {
       isVisible = false;
     }
-
     let color;
     switch (year) {
       case 2016:
@@ -586,27 +795,23 @@ document.addEventListener("DOMContentLoaded", () => {
       default:
         color = "#000000"; // Hitam (default)
     }
-
     return {
       color: isVisible ? color : "transparent",
       weight: isVisible ? 2 : 0,
       opacity: isVisible ? 1 : 0,
     };
   }
-
+  // B.2. Baseline
   function stylebslnLayer() {
     (color = "#d66ad6ff"), (weight = 1), (opacity = 0.5);
   }
-
+  // B.3. Shore Change --- LRR
   function stylelrrLayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
-
     const featureKec = (feature.properties.Kec || "").toLowerCase();
     const featureDesa = (feature.properties.Desa || "").toLowerCase();
-
     let isVisible = true;
-
     // LOGIKA FILTER ADMINISTRASI
     if (selectedKecamatan && featureKec !== selectedKecamatan) {
       isVisible = false;
@@ -614,11 +819,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectedDesa && featureDesa !== selectedDesa) {
       isVisible = false;
     }
-
     // Sisa dari fungsi styleFunction tetap sama...
     const lrr = feature.properties.LRR;
     let color = "#ff0000"; // Default color (Sangat Tinggi)
-
     if (lrr > 2) {
       color = "#008000"; // Hijau Tua
     } else if (lrr > 1 && lrr <= 2) {
@@ -628,7 +831,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (lrr >= -2 && lrr < -1) {
       color = "#ff9900"; // Oranye
     }
-
     return {
       //Kalau menu skor di atur, maka nilai yang tidak pilih akan diberi warna transparant
       color: isVisible ? color : "transparent",
@@ -636,7 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-
+  // B.4. Shore Change --- EPR
   function styleeprLayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
@@ -675,8 +877,8 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-
-    function stylensmLayer(feature) {
+  // B.5. Shore Change --- NSM
+  function stylensmLayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
 
@@ -716,17 +918,13 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-
-  //Fungsi untuk menentukan simbolisasi area perubahan
+  // B.6. Area Perubahan
   function styleSCARLayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
-
     const featureKec = (feature.properties.Kec || "").toLowerCase();
     const featureDesa = (feature.properties.Desa || "").toLowerCase();
-
     let isVisible = true;
-
     // LOGIKA FILTER ADMINISTRASI
     if (selectedKecamatan && featureKec !== selectedKecamatan) {
       isVisible = false;
@@ -738,7 +936,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sisa dari fungsi styleFunction tetap sama...
     const ketArea = feature.properties.Ket;
     let color = "#ff0000"; // Default color (Sangat Tinggi)
-
     if (ketArea === "Akresi") {
       color = "#4ca0e9ff"; // Hijau Tua
     } else if (ketArea === "Stabil") {
@@ -751,13 +948,11 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-
-  //Fungsi untuk menentukan simbolisasi berdasarkan nilai skor layer data
+  // B.7. Variabel Kerentanan --- Skor Layer Data
   function styleVARKERLayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
-    const selectedSkor = skorFilter.value; // ➕ AMBIL NILAI DARI FILTER SKOR
-
+    const selectedSkor = skorFilter.value; //
     const props = feature.properties;
     const featureKec = (props.Kec || "").toLowerCase();
     const featureDesa = (props.Desa || "").toLowerCase();
@@ -798,8 +993,7 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-
-  //Fungsi untuk menentukan simbolisasi CVI
+  // B.8. Indeks Kerentanan Pesisir --- CVI
   function styleCVILayer(feature) {
     const selectedKecamatan = kecamatanFilter.value.toLowerCase();
     const selectedDesa = desaFilter.value.toLowerCase();
@@ -823,13 +1017,6 @@ document.addEventListener("DOMContentLoaded", () => {
       isVisible = false;
     }
 
-    // if (!props) return { color: "transparent", weight: 0 };
-    // // LOGIKA FILTER CVI
-    // if (isVisible && selectedCVI &&  featureCVI !== selectedCVI)
-    //   isVisible = false;
-
-    // Sisa dari fungsi styleFunction tetap sama...
-    // cvi = props.CVI;
     cvi = feature.properties.Kerentanan;
     let color = "#ff0000"; // Default color (Sangat Tinggi)
 
@@ -850,9 +1037,36 @@ document.addEventListener("DOMContentLoaded", () => {
       opacity: isVisible ? 1 : 0,
     };
   }
-  //// SIMBOLISASI BERAKHIR DI SINI
+  // B.9 Batas Administrasi Desa
+  function styleArdesaLayer(feature) {
+    const selectedKecamatan = kecamatanFilter.value.toLowerCase();
+    const selectedDesa = desaFilter.value.toLowerCase();
 
-  //// FUNGSI UNTUK MENGATUR PEMBARUAN ISI MENU LEGENDA BERDASARKAN LAYER YANG SEDANG AKTIF ////
+    // const props = feature.properties;
+    const featureKec = (feature.properties.Kec || "").toLowerCase();
+    const featureDesa = (feature.properties.Desa || "").toLowerCase();
+
+    let isVisible = true;
+
+    // LOGIKA FILTER ADMINISTRASI
+    if (selectedKecamatan && featureKec !== selectedKecamatan) {
+      isVisible = false;
+    }
+    if (selectedDesa && featureDesa !== selectedDesa) {
+      isVisible = false;
+    }
+
+    let color = "#24222295"; // Default color (Sangat Tinggi)
+
+    return {
+      //Kalau menu cvi di atur, maka nilai yang tidak pilih akan diberi warna transparant
+      color: isVisible ? color : "transparent",
+      weight: isVisible ? 2 : 0,
+      opacity: isVisible ? 1 : 0,
+    };
+  }
+
+  // C. Fungsi untuk Mengatur Pembaruan Isi Menu Legenda Berdasarkan Layer yang Sedang Aktif
   function updateLegend() {
     legendaContainer.innerHTML = ""; // Bersihkan legenda yang ada
 
@@ -1183,11 +1397,9 @@ document.addEventListener("DOMContentLoaded", () => {
       noLegendText.style.display = "block";
     }
   }
-  //// FUNGSI UNTUK MENGATUR PEMBARUAN ISI MENU LEGENDA BERAKHIR DI SINI ////
 
-  // / / / /  F I L T E R   / / / /  //
-  //// KECAMATAN DAN DESA DIMULAI DI SINI ////
-  // Fungsi untuk memperbarui dropdown filter kecamatan dan desa berdasarkan layer yang aktif
+  // D. Fungsi untuk Mengatur Pembaruan Isi Menu Filter
+  // D.1. Fungsi untuk mengatur pembaruan isi group/dropdown filter kecamatan dan desa berdasarkan layer yang aktif
   function updateFilterDropdowns() {
     const kecSet = new Set();
     const desaSet = new Set();
@@ -1257,201 +1469,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Fungsi untuk mengontrol visibilitas tombol reset
-  function toggleResetButton() {
-    if (
-      kecamatanFilter.value !== "" ||
-      desaFilter.value !== "" ||
-      skorFilter.value !== "" ||
-      cviFilter.value !== ""
-    ) {
-      resetButton.style.display = "block";
-    } else {
-      resetButton.style.display = "none";
-    }
-  }
-
-  // Handle dropdown perubahan filter untuk KECAMATAN
-  kecamatanFilter.addEventListener("change", () => {
-    /// Group Garis Pantai
-    if (garisPantai2016Layer) {
-      garisPantai2016Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2016)
-      );
-    }
-    if (garisPantai2017Layer) {
-      garisPantai2017Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2017)
-      );
-    }
-    if (garisPantai2018Layer) {
-      garisPantai2018Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2018)
-      );
-    }
-    if (garisPantai2019Layer) {
-      garisPantai2019Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2019)
-      );
-    }
-    if (garisPantai2020Layer) {
-      garisPantai2020Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2020)
-      );
-    }
-    if (garisPantai2021Layer) {
-      garisPantai2021Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2021)
-      );
-    }
-    if (garisPantai2022Layer) {
-      garisPantai2022Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2022)
-      );
-    }
-    if (garisPantai2023Layer) {
-      garisPantai2023Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2023)
-      );
-    }
-    if (garisPantai2024Layer) {
-      garisPantai2024Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2024)
-      );
-    }
-    /// Group Perubahan
-    if (sctlrrLayer) {
-      sctlrrLayer.setStyle(stylelrrLayer);
-    }
-    if (scteprLayer) {
-      scteprLayer.setStyle(styleeprLayer);
-    }
-    if (sctnsmLayer) {
-      sctnsmLayer.setStyle(stylensmLayer);
-    }
-    if (scarLayer) {
-      scarLayer.setStyle(styleSCARLayer);
-    }
-    /// Group Kerentanan
-    if (slplnLayer) {
-      slplnLayer.setStyle(styleVARKERLayer);
-    }
-    if (glglnLayer) {
-      glglnLayer.setStyle(styleVARKERLayer);
-    }
-    if (gmrflnLayer) {
-      gmrflnLayer.setStyle(styleVARKERLayer);
-    }
-    if (pslnLayer) {
-      pslnLayer.setStyle(styleVARKERLayer);
-    }
-    if (slrlnLayer) {
-      slrlnLayer.setStyle(styleVARKERLayer);
-    }
-    if (sclnLayer) {
-      sclnLayer.setStyle(styleVARKERLayer);
-    }
-    if (waveLayer) {
-      waveLayer.setStyle(styleVARKERLayer);
-    }
-    if (cvilnLayer) {
-      cvilnLayer.setStyle(styleCVILayer);
-    }
-    toggleResetButton();
-  });
-
-  // Handle dropdown perubahan filter untuk DESA
-  desaFilter.addEventListener("change", () => {
-    /// Group Garis Pantai
-    if (garisPantai2016Layer) {
-      garisPantai2016Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2016)
-      );
-    }
-    if (garisPantai2017Layer) {
-      garisPantai2017Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2017)
-      );
-    }
-    if (garisPantai2018Layer) {
-      garisPantai2018Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2018)
-      );
-    }
-    if (garisPantai2019Layer) {
-      garisPantai2019Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2019)
-      );
-    }
-    if (garisPantai2020Layer) {
-      garisPantai2020Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2020)
-      );
-    }
-    if (garisPantai2021Layer) {
-      garisPantai2021Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2021)
-      );
-    }
-    if (garisPantai2022Layer) {
-      garisPantai2022Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2022)
-      );
-    }
-    if (garisPantai2023Layer) {
-      garisPantai2023Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2023)
-      );
-    }
-    if (garisPantai2024Layer) {
-      garisPantai2024Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2024)
-      );
-    }
-    /// Group Perubahan
-    if (sctlrrLayer) {
-      sctlrrLayer.setStyle(stylelrrLayer);
-    }
-    if (scteprLayer) {
-      scteprLayer.setStyle(styleeprLayer);
-    }
-    if (sctnsmLayer) {
-      sctnsmLayer.setStyle(stylensmLayer);
-    }
-    if (scarLayer) {
-      scarLayer.setStyle(styleSCARLayer);
-    }
-    /// Group Kerentanan
-    if (slplnLayer) {
-      slplnLayer.setStyle(styleVARKERLayer);
-    }
-    if (glglnLayer) {
-      glglnLayer.setStyle(styleVARKERLayer);
-    }
-    if (gmrflnLayer) {
-      gmrflnLayer.setStyle(styleVARKERLayer);
-    }
-    if (pslnLayer) {
-      pslnLayer.setStyle(styleVARKERLayer);
-    }
-    if (slrlnLayer) {
-      slrlnLayer.setStyle(styleVARKERLayer);
-    }
-    if (sclnLayer) {
-      sclnLayer.setStyle(styleVARKERLayer);
-    }
-    if (waveLayer) {
-      waveLayer.setStyle(styleVARKERLayer);
-    }
-    if (cvilnLayer) {
-      cvilnLayer.setStyle(styleCVILayer);
-    }
-    toggleResetButton();
-  });
-  //// DESA DAN KECAMATAN BERAKHIR DI SINI ////
-
-  ///PENGATURAN ISI DROPDOWN
-  /// Fungsi untuk mengatur struktur dan isi dropdown [ALL PROPERTIES]
+  // D.2. Fungsi untuk mengatur struktur dan isi dropdown
+  // ==> Dapat diterapkan di semua jenis properties, tapi pada website ini hanya untuk properties 'SKOR' dan 'CVI'
   function populateDropdown(element, dataSet, defaultText, prefix = "") {
     if (!element) return;
     const sortedData = Array.from(dataSet).sort((a, b) =>
@@ -1466,9 +1485,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  //// SKOR DIMULAI DI SINI ////
-  /// Fungsi untuk mengatur isi dropdown filter skor berdasarkan layer yang aktif
-  // Di panggil setelah divalidasi kalau layar yang aktif memuat properties 'SKOR'
+  // D.2.a. Fungsi untuk mengatur isi dropdown filter 'SKOR' berdasarkan layer yang aktif
+  // ==> dipanggil setelah divalidasi kalau layar yang aktif memuat properties 'SKOR'
   function updateSkorFilters() {
     const showSkorFilter = activeLayersWithSkor.length > 0;
     skorFilterGroup.style.display = showSkorFilter ? "block" : "none";
@@ -1491,37 +1509,8 @@ document.addEventListener("DOMContentLoaded", () => {
     populateDropdown(skorFilter, skorSet, "Pilih SKOR", "Skor ");
   }
 
-  /// Handle dropdown perubahan properties skor aja...
-  skorFilter.addEventListener("change", () => {
-    if (slplnLayer) {
-      slplnLayer.setStyle(styleVARKERLayer);
-    }
-    if (glglnLayer) {
-      glglnLayer.setStyle(styleVARKERLayer);
-    }
-    if (gmrflnLayer) {
-      gmrflnLayer.setStyle(styleVARKERLayer);
-    }
-    if (pslnLayer) {
-      pslnLayer.setStyle(styleVARKERLayer);
-    }
-    if (slrlnLayer) {
-      slrlnLayer.setStyle(styleVARKERLayer);
-    }
-    if (sclnLayer) {
-      sclnLayer.setStyle(styleVARKERLayer);
-    }
-    if (waveLayer) {
-      waveLayer.setStyle(styleVARKERLayer);
-    }
-
-    toggleResetButton();
-  });
-  //// SKOR SELESAI DI SINI ////
-
-  //// CVI DIMULAI DI SINI ////
-  /// Fungsi untuk mengatur isi dropdown filter skor berdasarkan layer yang aktif
-  // Di panggil setelah divalidasi kalau layar yang aktif memuat properties 'SKOR'
+  // D.2.b. Fungsi untuk mengatur isi dropdown filter 'Kerentanan' berdasarkan layer yang aktif
+  // ==> dipanggil setelah divalidasi kalau layar yang aktif memuat properties 'Kerentanan'
   function updateCVIFilters() {
     const showCVIFilter = activeLayersWithCVI.length > 0;
     cviFilterGroup.style.display = showCVIFilter ? "block" : "none";
@@ -1549,428 +1538,226 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   }
 
-  /// Handle dropdown perubahan properties cvi aja...
-  cviFilter.addEventListener("change", () => {
-    if (cvilnLayer) {
-      cvilnLayer.setStyle(styleCVILayer);
-    }
-    toggleResetButton();
-  });
-  //// CVI SELESAI DI SINI ////
-
-  //// ALL active layer you need
-  /// Fungsi untuk mengatur isi Array activeLayer
-  // dipanggil di 'event listener' group CHECKBOX
+  // E. Fungsi untuk mengatur isi Array 'activeLayersWithSkor', dan 'activeLayersWithCVI'
+  // ==> dipanggil di 'EVENT LISTENER Group Checkbox'
   function handleLayerToggle(layerValue, isChecked) {
     const data = geojsonData[layerValue];
-    // Deteksi apakah layer ini punya properti SKOR
+    // Mendeteksi apakah layer ini punya properti SKOR
     let hasSkorProperty =
       data &&
       data.features &&
       data.features.length > 0 &&
       data.features[0].properties.hasOwnProperty("SKOR");
-    // Deteksi apakah layer ini punya properti Kerentanan
+    // Mendeteksi apakah layer ini punya properti CVI
     let hasKerentananProperty =
       data &&
       data.features &&
       data.features.length > 0 &&
       data.features[0].properties.hasOwnProperty("CVI");
 
+    // Kondisi ketika layer diaktifkan
     if (isChecked) {
+      // layer yang memiliki properti 'SKOR' dimasukkan ke array 'activeLayersWithSkor'
       if (hasSkorProperty) activeLayersWithSkor.push(layerValue);
+      // layer yang memiliki properti 'CVI' dimasukkan ke array 'activeLayersWithCVI'
       if (hasKerentananProperty) activeLayersWithCVI.push(layerValue);
-      // Maka layernya ditambahkan ke array
     } else {
+      // Kondisi ketika layer tidak diaktifkan ==> layer dalam array dihapus
       activeLayersWithSkor = activeLayersWithSkor.filter(
         (item) => item !== layerValue
-      ); // tidak memenuhi kriteria poperties SKOR
+      );
       activeLayersWithCVI = activeLayersWithCVI.filter(
         (item) => item !== layerValue
-      ); // tidak memenuhi kriteria poperties Kerentanan
+      );
     }
 
-    // Fungsi isi dropdown filter Skor
+    // Memanggil dan menjalankan fungsi sesuai dengan pengaturan isi array filter terkiat.
     updateSkorFilters();
-    // Fungsi isi dropdown filter CVI
     updateCVIFilters();
   }
 
-  /// PENGATURAN SAAT TOMBOL RESET DIKLIK ///
-  // Handle klik tombol "Reset Filter"
-  resetButton.addEventListener("click", () => {
-    // Reset nilai dropdown
-    kecamatanFilter.value = "";
-    desaFilter.value = "";
-    skorFilter.value = "";
-    cviFilter.value = "";
+  // F. Fungsi untuk mengontrol visibilitas tombol reset
+  function toggleResetButton() {
+    if (
+      kecamatanFilter.value !== "" ||
+      desaFilter.value !== "" ||
+      skorFilter.value !== "" ||
+      cviFilter.value !== ""
+    ) {
+      resetButton.style.display = "block";
+    } else {
+      resetButton.style.display = "none";
+    }
 
-    // Perbarui tampilan dropdown desa (untuk menghapus opsi filter sebelumnya)
-    kecamatanFilter.dispatchEvent(new Event("change"));
+    if (currentTableLayerName) {
+      renderTableContent(currentTableLayerName);
+    }
+  }
 
-    // Terapkan gaya kembali ke semua fitur di layer garis pantai
-    if (garisPantai2016Layer) {
-      garisPantai2016Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2016)
-      );
-    }
-    if (garisPantai2017Layer) {
-      garisPantai2017Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2017)
-      );
-    }
-    if (garisPantai2018Layer) {
-      garisPantai2018Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2018)
-      );
-    }
-    if (garisPantai2019Layer) {
-      garisPantai2019Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2019)
-      );
-    }
-    if (garisPantai2020Layer) {
-      garisPantai2020Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2020)
-      );
-    }
-    if (garisPantai2021Layer) {
-      garisPantai2021Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2021)
-      );
-    }
-    if (garisPantai2022Layer) {
-      garisPantai2022Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2022)
-      );
-    }
-    if (garisPantai2023Layer) {
-      garisPantai2023Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2023)
-      );
-    }
-    if (garisPantai2024Layer) {
-      garisPantai2024Layer.setStyle((feature) =>
-        styleGarisPantai(feature, 2024)
-      );
-    }
-    /// Group Perubahan
-    if (sctlrrLayer) {
-      sctlrrLayer.setStyle(stylelrrLayer);
-    }
-    if (scteprLayer) {
-      scteprLayer.setStyle(styleeprLayer);
-    }
-    if (sctnsmLayer) {
-      sctnsmLayer.setStyle(stylensmLayer);
-    }
-    if (scarLayer) {
-      scarLayer.setStyle(styleSCARLayer);
-    }
-    // Terapkan gaya kembali ke semua fitur di layer kerentanan
-    if (slplnLayer) {
-      slplnLayer.setStyle(styleVARKERLayer);
-    }
-    if (glglnLayer) {
-      glglnLayer.setStyle(styleVARKERLayer);
-    }
-    if (gmrflnLayer) {
-      gmrflnLayer.setStyle(styleVARKERLayer);
-    }
-    if (pslnLayer) {
-      pslnLayer.setStyle(styleVARKERLayer);
-    }
-    if (slrlnLayer) {
-      slrlnLayer.setStyle(styleVARKERLayer);
-    }
-    if (sclnLayer) {
-      sclnLayer.setStyle(styleVARKERLayer);
-    }
-    if (waveLayer) {
-      waveLayer.setStyle(styleVARKERLayer);
-    }
-    if (cvilnLayer) {
-      cvilnLayer.setStyle(styleCVILayer);
-    }
-    toggleResetButton();
-  });
+  // G. Fungsi untuk mengatur dan memperbarui isi pada panel 'Tabel'
+  // G.1. Fungsi untuk menghubungkan kontent 'Tabel' dengan fitur 'Filter' dan 'Selected Layer'
+  async function renderTableContent(layerName) {
+    tableContent.innerHTML =
+      "<p style='text-align: center; color: #777; font-size: 12px;'>Memuat data tabel...</p>";
 
-  // / / / /  F I L T E R   / / / /  //
-
-  // / / S L I D E R / / //
-  // Handle transparency slider
-  transparencySlider.addEventListener("input", (e) => {
-    const opacity = e.target.value / 100;
-
-    // Cek layer teratas yang saat ini aktif dan terapkan opasitas
-    if (currentTopLayer && map.hasLayer(currentTopLayer)) {
-      currentTopLayer.setStyle({
-        opacity: opacity,
-      });
-    }
-  });
-
-  // / / T A B E L / / //
-  // Listen for fullscreen change events to update the button icon
-  document.addEventListener("fullscreenchange", () => {
-    const icon = fullscreenBtn.querySelector("i");
-    if (!document.fullscreenElement) {
-      icon.className = "fas fa-expand";
-    }
-    map.invalidateSize();
-  });
-
-  // Handle table icon clicks
-  tableIcons.forEach((icon) => {
-    icon.addEventListener("click", async (e) => {
-      const layerName = e.target.getAttribute("data-layer");
-
-      // Sembunyikan semua menu div dan hapus status aktif
-      menuDivs.forEach((div) => div.classList.remove("show"));
-      menuItems.forEach((item) => item.classList.remove("active"));
-
-      // Buka menu Tabel dan tandai sebagai aktif
-      const tabelMenu = document.getElementById("tabel-menu");
-      const tabelMenuItem = document.querySelector(
-        '.sidemenu-item[data-target="tabel-menu"]'
-      );
-      tabelMenu.classList.add("show");
-      tabelMenuItem.classList.add("active");
-      mainContent.classList.add("pushed-by-sidemenu");
-      sideMenu.classList.add("show-sidemenu");
-      menuToggleIcon.classList.remove("fa-bars");
-      menuToggleIcon.classList.add("fa-arrow-left");
-
-      // Tampilkan loading state
-      tableContent.innerHTML =
-        '<p style="text-align: center; color: #777;">Memuat data tabel...</p>';
-
-      let data = geojsonData[layerName];
-
-      // Jika data belum ada, muat dari server
-      if (!data) {
-        let geojsonUrl = "";
-        /// Kerentanan
-        if (layerName === "slrln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/SLRLN.geojson";
-        } else if (layerName === "waveln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/WAVELN.geojson";
-        } else if (layerName === "glgln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/GLGLN.geojson";
-        } else if (layerName === "slpln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/SLPLN.geojson";
-        } else if (layerName === "gmrfln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/GMRFLN.geojson";
-        } else if (layerName === "psln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/PSLN.geojson";
-        } else if (layerName === "scln") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Kerentanan/SCLN.geojson";
-        }
-        //// Garis Pantai
-        else if (layerName === "garis-pantai-2016") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20160309.geojson";
-        } else if (layerName === "garis-pantai-2017") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20170821.geojson";
-        } else if (layerName === "garis-pantai-2018") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20180418.geojson";
-        } else if (layerName === "garis-pantai-2019") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20190508.geojson";
-        } else if (layerName === "garis-pantai-2020") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20200422.geojson";
-        } else if (layerName === "garis-pantai-2021") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20210512.geojson";
-        } else if (layerName === "garis-pantai-2022") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20220402.geojson";
-        } else if (layerName === "garis-pantai-2023") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20230929.geojson";
-        } else if (layerName === "garis-pantai-2024") {
-          geojsonUrl =
-            "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/Garis%20Pantai/GP20240511.geojson";
-        }
-        /// Perubahan
-
-        try {
-          const response = await fetch(geojsonUrl);
-          if (!response.ok) throw new Error("Network response was not ok");
-          data = await response.json();
-          geojsonData[layerName] = data; // Simpan di cache
-        } catch (error) {
-          tableContent.innerHTML =
-            '<p style="text-align: center; color: #777;">Gagal memuat data tabel.</p>';
-          console.error("Failed to load table data:", error);
-          return;
-        }
+    if (!geojsonData[layerName]) {
+      const layer = await loadGeoJSONLayer(layerName);
+      if (!layer) {
+        tableContent.innerHTML =
+          "<p style='text-align: center; color: red;'>Gagal memuat data tabel.</p>";
+        return;
       }
+    }
 
-      // Buat tabel dari data GeoJSON
-      if (data && data.features && data.features.length > 0) {
-        const features = data.features;
-        const properties = features[0].properties;
+    const data = geojsonData[layerName];
+    if (data && data.features && data.features.length > 0) {
+      const selectedKecamatan = kecamatanFilter.value.toLowerCase();
+      const selectedDesa = desaFilter.value.toLowerCase();
+      const selectedSkor = skorFilter.value;
+      const selectedCVI = cviFilter.value;
 
-        // Tentukan header berdasarkan data yang ada
-        let headers = Object.keys(properties);
-        // Mengubah nama header untuk Garis Pantai
-        if (layerName.startsWith("garis-pantai")) {
-          headers = headers.map((header) => {
-            if (header.toUpperCase() === "KEC") return "Kecamatan";
-            if (header.toUpperCase() === "DESA") return "Desa";
-            return header; // Biarkan properti lainnya apa adanya
-          });
+      // Filter data berdasarkan kriteria yang dipilih
+      const filteredFeatures = data.features.filter((feature) => {
+        const props = feature.properties;
+        const featureKec = (props.Kec || "").toLowerCase();
+        const featureDesa = (props.Desa || "").toLowerCase();
+        const featureSkor = String(props.SKOR || "");
+        const featureCVI = props.Kerentanan;
+
+        let isVisible = true;
+        if (selectedKecamatan && featureKec !== selectedKecamatan) {
+          isVisible = false;
         }
+        if (selectedDesa && featureDesa !== selectedDesa) {
+          isVisible = false;
+        }
+        if (selectedSkor && featureSkor !== selectedSkor) {
+          isVisible = false;
+        }
+        if (selectedCVI && featureCVI !== selectedCVI) {
+          isVisible = false;
+        }
+        return isVisible;
+      });
 
-        let tableHTML = "<table><thead><tr>";
+      if (filteredFeatures.length > 0) {
+        const headers = Object.keys(filteredFeatures[0].properties);
+        let tableHtml = "<table><thead><tr>";
         headers.forEach((header) => {
-          tableHTML += `<th>${header}</th>`;
+          tableHtml += `<th>${header}</th>`;
         });
-        tableHTML += "</tr></thead><tbody>";
+        tableHtml += "</tr></thead><tbody>";
 
-        features.forEach((feature) => {
-          tableHTML += "<tr>";
-          const currentProps = feature.properties;
-          // Iterasi menggunakan header yang sudah ditentukan
+        filteredFeatures.forEach((feature) => {
+          // tableHtml += "<tr>";
+          const uniqueId = feature.properties._generated_id; // <-- GUNAKAN ID BARU
+          tableHtml += `<tr data-feature-id="${uniqueId}">`;
           headers.forEach((header) => {
-            // Cari key asli dari header yang sudah diubah namanya
-            let originalKey = Object.keys(currentProps).find((key) => {
-              if (key.toUpperCase() === "KEC" && header === "Kecamatan")
-                return true;
-              if (key.toUpperCase() === "DESA" && header === "Desa")
-                return true;
-              return key === header;
-            });
-            tableHTML += `<td>${currentProps[originalKey] || ""}</td>`;
+            const value = feature.properties[header];
+            tableHtml += `<td>${value !== null ? value : ""}</td>`;
           });
-          tableHTML += "</tr>";
+          tableHtml += "</tr>";
         });
-
-        tableHTML += "</tbody></table>";
-        tableContent.innerHTML = tableHTML;
+        tableHtml += "</tbody></table>";
+        tableContent.innerHTML = tableHtml;
       } else {
         tableContent.innerHTML =
-          '<p style="text-align: center; color: #777;">Tidak ada data untuk layer ini.</p>';
+          "<p style='text-align: center; color: #777; font-size: 12px;'>Tidak ada data yang cocok dengan filter saat ini.</p>";
+      }
+    } else {
+      tableContent.innerHTML =
+        "<p style='text-align: center; color: #777; font-size: 12px;'>Tidak ada data untuk layer ini.</p>";
+    }
+  }
+
+  // G.2. Fungsi untuk menampilkan panel tabel dari renderTableContent
+  async function displayTable(layerName) {
+    const tabelMenuDiv = document.getElementById("tabel-menu");
+    const tabelMenuItem = document.querySelector(
+      '.sidemenu-item[data-target="tabel-menu"]'
+    );
+
+    menuItems.forEach((item) => item.classList.remove("active"));
+    menuDivs.forEach((div) => div.classList.remove("show"));
+    tabelMenuItem.classList.add("active");
+    tabelMenuDiv.classList.add("show");
+
+    await renderTableContent(layerName);
+    // resetHighlights();
+  }
+
+  // G.3. Fungsi untuk mereset/menghapus semua highlight yang aktif, baik di peta maupun di tabel.
+  function resetHighlights() {
+    // Reset highlight di peta berdasarkan state yang tersimpan
+    if (selectionState.layer && selectionState.layerName) {
+      const parentLayer = geojsonLayers[selectionState.layerName];
+      if (parentLayer) {
+        // Reset style menggunakan layer induk yang benar
+        parentLayer.resetStyle(selectionState.layer);
+      }
+    }
+
+    // Reset highlight di tabel
+    if (lastSelectedTableRow) {
+      lastSelectedTableRow.classList.remove("selected-row");
+    }
+
+    // Kosongkan state setelah reset
+    selectionState.layer = null;
+    selectionState.layerName = null;
+    lastSelectedTableRow = null;
+  }
+
+  // G.4. Fungsi untuk menyorot feature di peta dan baris di tabel berdasarkan ID unik.
+  // ==> @param {string|number} featureId - ID unik dari feature.
+  function selectFeatureById(featureId, layerName) {
+    resetHighlights(); // Selalu bersihkan highlight lama sebelum memulai yang baru
+
+    const targetLayer = geojsonLayers[layerName];
+    if (!targetLayer) {
+      console.error(
+        "Layer " + layerName + " tidak ditemukan di cache geojsonLayers."
+      );
+      return;
+    }
+
+    // 1. Sorot di Peta
+    targetLayer.eachLayer(function (layer) {
+      if (layer.feature.properties._generated_id == featureId) {
+        layer.setStyle(highlightStyle);
+        layer.bringToFront();
+        map.fitBounds(layer.getBounds(), {
+          paddingTopLeft: [350, 50],
+          maxZoom: 16,
+        });
+
+        // --- SIMPAN STATUS SELEKSI YANG BARU ---
+        selectionState.layer = layer;
+        selectionState.layerName = layerName;
       }
     });
-  });
-  // / / T A B E L / / //
-  // / /  /  S I D E  M E N U  / / / //
 
-  // / /  /  M A I N  T O P  H E A D E R  / / / //
-  // Geolocation Functionality
-  let locationMarker = null;
-  let accuracyCircle = null;
+    // 2. Sorot di Tabel
+    const tableRow = document.querySelector(
+      `#table-content tr[data-feature-id="${featureId}"]`
+    );
+    // --- TAMBAHKAN DEBUGGING DI SINI ---
+    console.log("Mencari baris tabel untuk ID:", featureId);
+    console.log("Elemen baris yang ditemukan:", tableRow);
+    if (tableRow) {
+      // 1. Tambahkan kelas CSS ke baris yang ditemukan
+      tableRow.classList.add("selected-row");
 
-  geolocationBtn.addEventListener("click", () => {
-    if ("geolocation" in navigator) {
-      map.spin(true, {
-        lines: 13,
-        length: 10,
-        width: 5,
-        radius: 15,
-        scale: 0.5,
-      });
+      // 2. Simpan referensi baris ini ke variabel global
+      lastSelectedTableRow = tableRow;
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          map.spin(false);
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const accuracy = position.coords.accuracy;
-          const latlng = [lat, lon];
-
-          // Hapus marker dan lingkaran sebelumnya jika ada
-          if (locationMarker) {
-            map.removeLayer(locationMarker);
-          }
-          if (accuracyCircle) {
-            map.removeLayer(accuracyCircle);
-          }
-
-          // Tambahkan marker ke lokasi
-          locationMarker = L.marker(latlng, {
-            icon: L.icon({
-              iconUrl:
-                "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-              tooltipAnchor: [16, -28],
-              shadowUrl:
-                "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-              shadowSize: [41, 41],
-            }),
-            className: "geolocation-marker",
-          })
-            .addTo(map)
-            .bindPopup(`<b>Lokasi Anda</b><br>Akurasi: ${accuracy} meter`)
-            .openPopup();
-
-          // Tambahkan lingkaran akurasi
-          accuracyCircle = L.circle(latlng, accuracy, {
-            color: "blue",
-            fillColor: "#3b82f6",
-            fillOpacity: 0.2,
-            weight: 2,
-          }).addTo(map);
-
-          // Pindahkan peta ke lokasi
-          map.setView(latlng, 15);
-        },
-        (error) => {
-          map.spin(false);
-          console.error("Error getting location:", error.message);
-          let errorMessage;
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = "Akses lokasi ditolak.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = "Informasi lokasi tidak tersedia.";
-              break;
-            case error.TIMEOUT:
-              errorMessage = "Waktu permintaan lokasi habis.";
-              break;
-            default:
-              errorMessage = "Terjadi kesalahan yang tidak diketahui.";
-              break;
-          }
-          alert(`Gagal mendapatkan lokasi Anda.\nError: ${errorMessage}`);
-        }
-      );
-    } else {
-      alert("Geolokasi tidak didukung oleh browser ini.");
+      // (Opsional) Scroll ke baris tersebut
+      tableRow.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  });
+  }
 
-  // Handle Fullscreen button
-  fullscreenBtn.addEventListener("click", () => {
-    const mapContainer = map.getContainer();
-    const icon = fullscreenBtn.querySelector("i");
-
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-      icon.className = "fas fa-expand";
-    } else {
-      mapContainer.requestFullscreen();
-      icon.className = "fas fa-compress";
-    }
-  });
-  // / /  /  M A I N  T O P  H E A D E R  / / / //
-
-  // / /  T A B  V I S U A L I S A S I / / //
-  // Fungsi untuk menampilkan visualisasi
+  // H. Fungsi untuk mengatur tampilan dan isi Panel Tab Visualisasi
+  // H.1. Fungsi untuk menampilkan visualisasi
   function renderVisualisasi() {
     visualisasiTabContent.innerHTML = "";
 
@@ -2112,7 +1899,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateNavButtons();
   }
 
-  // Fungsi untuk memperbarui status tombol navigasi
+  // H.2. Fungsi untuk memperbarui status tombol navigasi
   function updateNavButtons() {
     if (visualisasiItems.length > 1) {
       prevBtn.style.display = "block";
@@ -2126,7 +1913,480 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Tambahkan event listener untuk tombol navigasi
+  // ===================================================================
+  // 6. EVENT LISTENER UNTUK ITEM PADA PANEL 'FILTER' DIKLIK
+  // ===================================================================
+  // A. Filter Kecamatan
+  // ==> Memperbarui isi panel tabel dan visualisasi layer features sesuai style simbolisasi masing-masing layer.
+  kecamatanFilter.addEventListener("change", () => {
+    if (currentTableLayerName) {
+      renderTableContent(currentTableLayerName);
+    }
+    /// Group Garis Pantai
+    if (garisPantai2016Layer) {
+      garisPantai2016Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2016)
+      );
+    }
+    if (garisPantai2017Layer) {
+      garisPantai2017Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2017)
+      );
+    }
+    if (garisPantai2018Layer) {
+      garisPantai2018Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2018)
+      );
+    }
+    if (garisPantai2019Layer) {
+      garisPantai2019Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2019)
+      );
+    }
+    if (garisPantai2020Layer) {
+      garisPantai2020Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2020)
+      );
+    }
+    if (garisPantai2021Layer) {
+      garisPantai2021Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2021)
+      );
+    }
+    if (garisPantai2022Layer) {
+      garisPantai2022Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2022)
+      );
+    }
+    if (garisPantai2023Layer) {
+      garisPantai2023Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2023)
+      );
+    }
+    if (garisPantai2024Layer) {
+      garisPantai2024Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2024)
+      );
+    }
+    /// Group Perubahan
+    if (sctlrrLayer) {
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
+    }
+    if (scarLayer) {
+      scarLayer.setStyle(styleSCARLayer);
+    }
+    /// Group Kerentanan
+    if (slplnLayer) {
+      slplnLayer.setStyle(styleVARKERLayer);
+    }
+    if (glglnLayer) {
+      glglnLayer.setStyle(styleVARKERLayer);
+    }
+    if (gmrflnLayer) {
+      gmrflnLayer.setStyle(styleVARKERLayer);
+    }
+    if (pslnLayer) {
+      pslnLayer.setStyle(styleVARKERLayer);
+    }
+    if (slrlnLayer) {
+      slrlnLayer.setStyle(styleVARKERLayer);
+    }
+    if (sclnLayer) {
+      sclnLayer.setStyle(styleVARKERLayer);
+    }
+    if (waveLayer) {
+      waveLayer.setStyle(styleVARKERLayer);
+    }
+    if (cvilnLayer) {
+      cvilnLayer.setStyle(styleCVILayer);
+    }
+    /// Group ADMIN
+    if (ardesaLayer) {
+      ardesaLayer.setStyle(styleArdesaLayer);
+    }
+    toggleResetButton();
+  });
+
+  // B. Filter Desa
+  // ==> Memperbarui isi panel tabel dan visualisasi layer features sesuai style simbolisasi masing-masing layer.
+  desaFilter.addEventListener("change", () => {
+    if (currentTableLayerName) {
+      renderTableContent(currentTableLayerName);
+    }
+    /// Group ADMIN
+    if (ardesaLayer) {
+      ardesaLayer.setStyle(styleArdesaLayer);
+    }
+    /// Group Garis Pantai
+    if (garisPantai2016Layer) {
+      garisPantai2016Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2016)
+      );
+    }
+    if (garisPantai2017Layer) {
+      garisPantai2017Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2017)
+      );
+    }
+    if (garisPantai2018Layer) {
+      garisPantai2018Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2018)
+      );
+    }
+    if (garisPantai2019Layer) {
+      garisPantai2019Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2019)
+      );
+    }
+    if (garisPantai2020Layer) {
+      garisPantai2020Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2020)
+      );
+    }
+    if (garisPantai2021Layer) {
+      garisPantai2021Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2021)
+      );
+    }
+    if (garisPantai2022Layer) {
+      garisPantai2022Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2022)
+      );
+    }
+    if (garisPantai2023Layer) {
+      garisPantai2023Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2023)
+      );
+    }
+    if (garisPantai2024Layer) {
+      garisPantai2024Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2024)
+      );
+    }
+    /// Group Perubahan
+    if (sctlrrLayer) {
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
+    }
+    if (scarLayer) {
+      scarLayer.setStyle(styleSCARLayer);
+    }
+    /// Group Kerentanan
+    if (slplnLayer) {
+      slplnLayer.setStyle(styleVARKERLayer);
+    }
+    if (glglnLayer) {
+      glglnLayer.setStyle(styleVARKERLayer);
+    }
+    if (gmrflnLayer) {
+      gmrflnLayer.setStyle(styleVARKERLayer);
+    }
+    if (pslnLayer) {
+      pslnLayer.setStyle(styleVARKERLayer);
+    }
+    if (slrlnLayer) {
+      slrlnLayer.setStyle(styleVARKERLayer);
+    }
+    if (sclnLayer) {
+      sclnLayer.setStyle(styleVARKERLayer);
+    }
+    if (waveLayer) {
+      waveLayer.setStyle(styleVARKERLayer);
+    }
+    if (cvilnLayer) {
+      cvilnLayer.setStyle(styleCVILayer);
+    }
+    toggleResetButton();
+  });
+
+  // C. Filter SKOR
+  // ==> Memperbarui isi panel tabel dan visualisasi layer features sesuai style simbolisasi masing-masing layer.
+  skorFilter.addEventListener("change", () => {
+    if (currentTableLayerName) {
+      renderTableContent(currentTableLayerName);
+    }
+    if (slplnLayer) {
+      slplnLayer.setStyle(styleVARKERLayer);
+    }
+    if (glglnLayer) {
+      glglnLayer.setStyle(styleVARKERLayer);
+    }
+    if (gmrflnLayer) {
+      gmrflnLayer.setStyle(styleVARKERLayer);
+    }
+    if (pslnLayer) {
+      pslnLayer.setStyle(styleVARKERLayer);
+    }
+    if (slrlnLayer) {
+      slrlnLayer.setStyle(styleVARKERLayer);
+    }
+    if (sclnLayer) {
+      sclnLayer.setStyle(styleVARKERLayer);
+    }
+    if (waveLayer) {
+      waveLayer.setStyle(styleVARKERLayer);
+    }
+
+    toggleResetButton();
+  });
+
+  // D. Filter CVI
+  // ==> Memperbarui isi panel tabel dan visualisasi layer features sesuai style simbolisasi masing-masing layer.
+  cviFilter.addEventListener("change", () => {
+    if (currentTableLayerName) {
+      renderTableContent(currentTableLayerName);
+    }
+    if (cvilnLayer) {
+      cvilnLayer.setStyle(styleCVILayer);
+    }
+    toggleResetButton();
+  });
+
+  // E. Tombol Reset
+  resetButton.addEventListener("click", () => {
+    // Reset nilai dropdown
+    kecamatanFilter.value = "";
+    desaFilter.value = "";
+    skorFilter.value = "";
+    cviFilter.value = "";
+
+    // Perbarui tampilan dropdown desa (untuk menghapus opsi filter sebelumnya)
+    kecamatanFilter.dispatchEvent(new Event("change"));
+
+    ///SEPERTINYA INI DIGANTI SAMA FUNGSI RENDER DEHH....
+    // Terapkan gaya kembali ke semua fitur di layer garis pantai
+    /// Group ADMIN
+    if (ardesaLayer) {
+      ardesaLayer.setStyle(styleArdesaLayer);
+    }
+    if (garisPantai2016Layer) {
+      garisPantai2016Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2016)
+      );
+    }
+    if (garisPantai2017Layer) {
+      garisPantai2017Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2017)
+      );
+    }
+    if (garisPantai2018Layer) {
+      garisPantai2018Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2018)
+      );
+    }
+    if (garisPantai2019Layer) {
+      garisPantai2019Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2019)
+      );
+    }
+    if (garisPantai2020Layer) {
+      garisPantai2020Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2020)
+      );
+    }
+    if (garisPantai2021Layer) {
+      garisPantai2021Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2021)
+      );
+    }
+    if (garisPantai2022Layer) {
+      garisPantai2022Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2022)
+      );
+    }
+    if (garisPantai2023Layer) {
+      garisPantai2023Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2023)
+      );
+    }
+    if (garisPantai2024Layer) {
+      garisPantai2024Layer.setStyle((feature) =>
+        styleGarisPantai(feature, 2024)
+      );
+    }
+    /// Group Perubahan
+    if (sctlrrLayer) {
+      sctlrrLayer.setStyle(stylelrrLayer);
+    }
+    if (scteprLayer) {
+      scteprLayer.setStyle(styleeprLayer);
+    }
+    if (sctnsmLayer) {
+      sctnsmLayer.setStyle(stylensmLayer);
+    }
+    if (scarLayer) {
+      scarLayer.setStyle(styleSCARLayer);
+    }
+    // Terapkan gaya kembali ke semua fitur di layer kerentanan
+    if (slplnLayer) {
+      slplnLayer.setStyle(styleVARKERLayer);
+    }
+    if (glglnLayer) {
+      glglnLayer.setStyle(styleVARKERLayer);
+    }
+    if (gmrflnLayer) {
+      gmrflnLayer.setStyle(styleVARKERLayer);
+    }
+    if (pslnLayer) {
+      pslnLayer.setStyle(styleVARKERLayer);
+    }
+    if (slrlnLayer) {
+      slrlnLayer.setStyle(styleVARKERLayer);
+    }
+    if (sclnLayer) {
+      sclnLayer.setStyle(styleVARKERLayer);
+    }
+    if (waveLayer) {
+      waveLayer.setStyle(styleVARKERLayer);
+    }
+    if (cvilnLayer) {
+      cvilnLayer.setStyle(styleCVILayer);
+    }
+    toggleResetButton();
+  });
+
+  // ===================================================================
+  // 6. EVENT LISTENER UNTUK ITEM PADA PANEL 'SLIDER' DIGERAKKAN
+  // ===================================================================
+  transparencySlider.addEventListener("input", (e) => {
+    const opacity = e.target.value / 100;
+
+    // Cek layer teratas yang saat ini aktif dan terapkan opasitas
+    if (currentTopLayer && map.hasLayer(currentTopLayer)) {
+      currentTopLayer.setStyle({
+        opacity: opacity,
+      });
+    }
+  });
+
+  // ===================================================================
+  // 7. EVENT LISTENER UNTUK ITEM PADA PANEL 'TABEL' DIKLIK
+  // ===================================================================
+  // A. Ketika baris data pada tabel diklik
+  tableContent.addEventListener("click", (e) => {
+    const targetRow = e.target.closest("tr");
+    if (targetRow && targetRow.dataset.featureId) {
+      const featureId = targetRow.dataset.featureId;
+      // Panggil dengan menyertakan nama layer tabel yang sedang aktif
+      selectFeatureById(featureId, currentTableLayerName);
+    }
+  });
+
+  // ===================================================================
+  // 7. EVENT LISTENER UNTUK TOMBOL PADA TOP BAR
+  // ===================================================================
+  // A. Tombol Geolokasi
+  geolocationBtn.addEventListener("click", () => {
+    if ("geolocation" in navigator) {
+      map.spin(true, {
+        lines: 13,
+        length: 10,
+        width: 5,
+        radius: 15,
+        scale: 0.5,
+      });
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          map.spin(false);
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+          const latlng = [lat, lon];
+
+          // Hapus marker dan lingkaran sebelumnya jika ada
+          if (locationMarker) {
+            map.removeLayer(locationMarker);
+          }
+          if (accuracyCircle) {
+            map.removeLayer(accuracyCircle);
+          }
+
+          // Tambahkan marker ke lokasi
+          locationMarker = L.marker(latlng, {
+            icon: L.icon({
+              iconUrl:
+                "https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+              tooltipAnchor: [16, -28],
+              shadowUrl:
+                "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+              shadowSize: [41, 41],
+            }),
+            className: "geolocation-marker",
+          })
+            .addTo(map)
+            .bindPopup(`<b>Lokasi Anda</b><br>Akurasi: ${accuracy} meter`)
+            .openPopup();
+
+          // Tambahkan lingkaran akurasi
+          accuracyCircle = L.circle(latlng, accuracy, {
+            color: "blue",
+            fillColor: "#3b82f6",
+            fillOpacity: 0.2,
+            weight: 2,
+          }).addTo(map);
+
+          // Pindahkan peta ke lokasi
+          map.setView(latlng, 15);
+        },
+        (error) => {
+          map.spin(false);
+          console.error("Error getting location:", error.message);
+          let errorMessage;
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Akses lokasi ditolak.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Informasi lokasi tidak tersedia.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Waktu permintaan lokasi habis.";
+              break;
+            default:
+              errorMessage = "Terjadi kesalahan yang tidak diketahui.";
+              break;
+          }
+          alert(`Gagal mendapatkan lokasi Anda.\nError: ${errorMessage}`);
+        }
+      );
+    } else {
+      alert("Geolokasi tidak didukung oleh browser ini.");
+    }
+  });
+
+  // B. Tombol Fullscreen
+  fullscreenBtn.addEventListener("click", () => {
+    const mapContainer = map.getContainer();
+    const icon = fullscreenBtn.querySelector("i");
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+      icon.className = "fas fa-expand";
+    } else {
+      mapContainer.requestFullscreen();
+      icon.className = "fas fa-compress";
+    }
+  });
+
+  // ===================================================================
+  // 8. EVENT LISTENER UNTUK TOMBOL PADA TAB/PANEL VISUALISASI
+  // ===================================================================
+  // A. Tombol Sebelumnya
   prevBtn.addEventListener("click", () => {
     if (currentVisualisasiIndex > 0) {
       currentVisualisasiIndex--;
@@ -2134,6 +2394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // B. Tombol Setelahnya
   nextBtn.addEventListener("click", () => {
     if (currentVisualisasiIndex < visualisasiItems.length - 1) {
       currentVisualisasiIndex++;
@@ -2141,13 +2402,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Tambahkan fungsionalitas drag-and-drop pada tab visualisasi
+  // C. Menambahkan fungsionalitas drag-and-drop pada tab visualisasi
+  // C.1. Deklarasi variabel drag-and-drop
   let isDraggingVisualisasi = false;
   let offset = {
     x: 0,
     y: 0,
   };
 
+  // C.2. Ketika tombol mouse diklik di atas suatu elemen
   visualisasiTabHeader.addEventListener("mousedown", (e) => {
     isDraggingVisualisasi = true;
     visualisasiTabContainer.classList.add("is-dragging");
@@ -2155,11 +2418,13 @@ document.addEventListener("DOMContentLoaded", () => {
     offset.y = e.clientY - visualisasiTabContainer.offsetTop;
   });
 
+  // C.3. Ketika tombol mouse dilepaskan setelah ditekan/diklik
   document.addEventListener("mouseup", () => {
     isDraggingVisualisasi = false;
     visualisasiTabContainer.classList.remove("is-dragging");
   });
 
+  // C.3. Ketika mouse diklik dan kursor digerakkan bersamaan
   document.addEventListener("mousemove", (e) => {
     if (isDraggingVisualisasi) {
       const newX = e.clientX - offset.x;
@@ -2171,8 +2436,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Tambahkan event listener untuk tombol di dalam popup
+  // ===================================================================
+  // 8. EVENT LISTENER UNTUK ELEMENT PADA DIV PETA
+  // ===================================================================
+  // A. Tombol di dalam POPUP
   map.on("popupopen", function () {
+    // A.1. Tombol Khusus DSAS
     const nsm = document.querySelector(".show-nsm-btn");
     if (nsm) {
       nsm.addEventListener("click", () => {
@@ -2195,7 +2464,7 @@ document.addEventListener("DOMContentLoaded", () => {
           informasiText.innerHTML = `
           <h4>Net Shoreline Movement</h4>
           <p><strong>Net Shoreline Movement (NSM)</strong> 
-          pengukuran perubahan posisi garis pantai antara dua waktu yang berbeda. 
+          adalah pengukuran perubahan posisi garis pantai antara dua waktu yang berbeda. 
           Secara sederhana, ini adalah jarak total seberapa jauh sebuah pantai telah maju (akresi) 
           atau mundur (abrasi) dalam periode tertentu.</p>
           <ol>
@@ -2221,7 +2490,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (epr) {
       epr.addEventListener("click", () => {
         const layerName = epr.getAttribute("data-layer-name");
-        if (layerName === "sctlrr") {
+        if (layerName === "sctepr") {
           // Buka menu Informasi dan tandai sebagai aktif
           menuDivs.forEach((div) => div.classList.remove("show"));
           menuItems.forEach((item) => item.classList.remove("active"));
@@ -2238,11 +2507,18 @@ document.addEventListener("DOMContentLoaded", () => {
           // Tampilkan teks informasi untuk SLR
           informasiText.innerHTML = `
           <h4>End Point Rate</h4>
-          <p><strong>End Point Rate (EPR)</strong> 
-          adalah tingkat kecepatan perubahan garis pantai 
-          yang dinyatakan dalam satuan jarak per tahun (misalnya, meter/tahun).
-          Oleh karena itu, nilai EPR dapat menjawab pertanyaan "Seberapa cepat 
-          pantai itu bergeser setiap tahunnya?".</p>`;
+          <p style='text-align: justify;'><strong>End Point Rate (EPR)</strong> 
+          adalah salah satu metode statistik yang digunakan dalam Digital 
+          Shoreline Analysis System (DSAS) untuk menghitung laju perubahan garis pantai. </p>
+          <p style='text-align: justify;> Perhitungan EPR dilakukan dengan membagi jarak perubahan atau pergerakan garis pantai 
+          dengan rentang waktu antara garis pantai tertua dan terbaru yang terekam. Metode ini 
+          secara efektif menunjukkan seberapa cepat pesisir mengalami akresi (penambahan daratan) 
+          atau erosi (pengikisan daratan) dalam satuan meter per tahun.
+          </p>
+          <p style='text-align: justify;> Nilai positif dari EPR mengindikasikan terjadinya akresi atau penambahan daratan ke arah 
+          laut, sedangkan nilai negatif menunjukkan adanya erosi atau mundurnya garis pantai ke arah 
+          daratan. Keunggulan utama dari metode ini adalah kesederhanaan perhitungannya dan kebutuhan 
+          data yang minim, yaitu hanya dua data garis pantai dari waktu yang berbeda.".</p>`;
           visualisasiContainer.style.display = "none";
           informasiText.style.display = "block";
         }
@@ -2304,15 +2580,17 @@ document.addEventListener("DOMContentLoaded", () => {
         renderVisualisasi();
       });
     }
-    //// BUTTON KHUSUS DSAS
 
-    ///// BUTTON UMUM
+    // A.2. Tombol Visualisasi Data
     const btn = document.querySelector(".show-image-btn");
     if (btn) {
       btn.addEventListener("click", () => {
         const slrCheckbox = document.querySelector('input[value="slrln"]');
         const waveCheckbox = document.querySelector('input[value="waveln"]');
         const scarCheckbox = document.querySelector('input[value="scar"]');
+        const nsmCheckbox = document.querySelector('input[value="sctnsm"]');
+        const eprCheckbox = document.querySelector('input[value="sctepr"]');
+        const lrrcheckbox = document.querySelector('input[value="sctlrr"]');
 
         // Clear the visualization items and populate based on checkboxes
         visualisasiItems = [];
@@ -2338,6 +2616,27 @@ document.addEventListener("DOMContentLoaded", () => {
             url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/data/GAMBAR/Grafik%20perubahan%20luas%20area.png",
           });
         }
+        if (nsmCheckbox.checked) {
+          visualisasiItems.push({
+            type: "image",
+            title: "Tabel Persebaran Transek Berdasarkan nilai statistik NSM",
+            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/NSM.png",
+          });
+        }
+        if (eprCheckbox.checked) {
+          visualisasiItems.push({
+            type: "image",
+            title: "Tabel Persebaran Transek Berdasarkan nilai statistik EPR",
+            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/main/data/GAMBAR/EPR.png",
+          });
+        }
+        if (lrrcheckbox.checked) {
+          visualisasiItems.push({
+            type: "image",
+            title: "Tabel Persebaran Transek Berdasarkan nilai statistik LRR",
+            url: "https://raw.githubusercontent.com/elyueich/leaflet-dashboard/refs/heads/main/data/GAMBAR/LRR.png",
+          });
+        }
 
         // Open the tab and render the first item
         visualisasiTabContainer.style.display = "flex";
@@ -2346,5 +2645,95 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
-  // / /  T A B  V I S U A L I S A S I / / //
+
+  // B. Event click pada div koordinat: Mengaktifkan fungsionalitas
+  coordDisplay.addEventListener("click", function () {
+    isListening = !isListening; // Toggle status
+    if (isListening) {
+      coordDisplay.innerHTML =
+        '<i class="fa-solid fa-location-crosshairs"></i>';
+      coordDisplay.style.backgroundColor = "gray";
+      coordDisplay.style.color = "white";
+      map.dragging.enable(); // Pastikan peta bisa digeser
+    } else {
+      coordDisplay.innerHTML =
+        '<i class="fa-solid fa-location-crosshairs"></i>';
+      coordDisplay.style.backgroundColor = "white";
+      coordDisplay.style.color = "black";
+      isCoordLocked = false; // Pastikan kunci dilepas
+      if (currentMarker) {
+        map.removeLayer(currentMarker);
+        currentMarker = null;
+      }
+    }
+  });
+
+  // C. Event mousemove: Tampilkan koordinat
+  map.on("mousemove", function (e) {
+    if (isListening && !isCoordLocked) {
+      var lat = e.latlng.lat.toFixed(4);
+      var lng = e.latlng.lng.toFixed(4);
+      coordDisplay.innerHTML =
+        "<i class='fa-solid fa-location-crosshairs'></i> " + lat + ", " + lng;
+    }
+  });
+
+  // D. Kursor klik layer apa saja setelah fitur selected layer aktif
+  map.on("click", function (e) {
+    if (isListening) {
+      if (currentMarker) {
+        map.removeLayer(currentMarker);
+      }
+
+      isCoordLocked = true;
+      var lat = e.latlng.lat.toFixed(4);
+      var lng = e.latlng.lng.toFixed(4);
+      coordDisplay.innerHTML =
+        "<i class='fa-solid fa-location-crosshairs'></i> " + lat + ", " + lng;
+
+      currentMarker = L.marker(e.latlng).addTo(map);
+
+      var popupContent =
+        "<i class='fa-solid fa-location-crosshairs'></i> (" +
+        lat +
+        ", " +
+        lng +
+        ')<br><div id="remove-marker-btn"><i class="fa-solid fa-trash"></i></div>';
+      currentMarker.bindPopup(popupContent).openPopup();
+
+      // Listener untuk tombol hapus
+      currentMarker.on("popupopen", function () {
+        document
+          .getElementById("remove-marker-btn")
+          .addEventListener("click", function () {
+            if (currentMarker) {
+              map.removeLayer(currentMarker);
+              currentMarker = null;
+              isCoordLocked = false;
+              isListening = false; // Nonaktifkan setelah dihapus
+              coordDisplay.innerHTML =
+                '<i class="fa-solid fa-location-crosshairs"></i>';
+              coordDisplay.style.backgroundColor = "white";
+              coordDisplay.style.color = "black";
+            }
+          });
+      });
+
+      // Listener untuk penutupan popup
+      currentMarker.on("popupclose", function () {
+        isCoordLocked = false;
+      });
+    }
+
+    // Cek jika target klik BUKAN sebuah feature (poligon, garis, dll.)
+    if (!e.originalEvent.target.classList.contains("leaflet-interactive")) {
+      // Jika klik di area kosong, panggil fungsi reset
+      resetHighlights();
+    }
+  });
+  // E. Event contextmenu (klik kanan): Lepas kunci
+  map.on("contextmenu", function () {
+    isCoordLocked = false;
+    // Bersihkan marker atau lakukan aksi lain jika perlu
+  });
 });
