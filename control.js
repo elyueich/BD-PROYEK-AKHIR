@@ -1020,13 +1020,13 @@ document.addEventListener("DOMContentLoaded", () => {
     cvi = feature.properties.Kerentanan;
     let color = "#ff0000"; // Default color (Sangat Tinggi)
 
-    if (cvi === "Sangat Rendah ( <= 3.5 )") {
+    if (cvi === "Sangat Rendah (<3.5)") {
       color = "#008000"; // Hijau Tua
-    } else if (cvi === "Rendah ( 3.51 - 5.5 )") {
+    } else if (cvi === "Rendah (3.5-5.5)") {
       color = "#00ff00"; // Hijau Muda
-    } else if (cvi === "Sedang ( 5.51 - 8.5 )") {
+    } else if (cvi === "Sedang (5.5-8.5)") {
       color = "#ffff00"; // Kuning
-    } else if (cvi === "Tinggi ( 8.51 - 12.5 )") {
+    } else if (cvi === "Tinggi (8.5-12.5)") {
       color = "#ff9900"; // Oranye
     }
 
@@ -2737,5 +2737,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Bersihkan marker atau lakukan aksi lain jika perlu
   });
 });
+
 
 
